@@ -11,7 +11,7 @@ app.get('/', function(req, res){
 
 //se la query è con client viene mandata la risorsa
 app.use('/client', express.static(__dirname + '/client'));
-server.listen(2000);
+server.listen(8080);
 
 
 //inizializzo sockert.io che andrà inserito anche dentro l'index.html
