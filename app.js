@@ -312,6 +312,8 @@ var initGame = function(sockets){
     sockets[i].emit('mano', mani[i]);
   }
 
+  /*IMPLEMENTERO' PIU' AVANTI QUESTA FEATURE
+
   //stabilisco chi deve iniziare
   var cas = Math.floor(Math.random()*4);
 
@@ -330,6 +332,11 @@ var initGame = function(sockets){
     j++;
 
   }
+  */
+
+  var socket2 = [];
+  socket2 = sockets;
+
 
 /*
 creo il game loop mediante una catena di messaggi e eventi in modo da bloccare
@@ -360,10 +367,15 @@ concludere la mano
     asso = 0;
     carte.splice(0, carte.length);
 
+    var dataNic = {
+      data:data,
+      nickname:PLAYER_LIST[socket2[0].id].nickname,
+    }
+
     console.log("Carta giocata: ", data);
 
     for(var k = 0; k<4; k++){
-      socket2[k].emit('aggiornaCarta', data);
+      socket2[k].emit('aggiornaCarta', dataNic);
       console.log("sto aggiornando la carta giocata");
     }
     //mando messaggio di stop
@@ -571,8 +583,13 @@ concludere la mano
 
     console.log("Carta giocata: ", data);
 
+    var dataNic = {
+      data:data,
+      nickname:PLAYER_LIST[socket2[1].id].nickname,
+    }
+
     for(var k = 0; k<4; k++){
-      socket2[k].emit('aggiornaCarta', data);
+      socket2[k].emit('aggiornaCarta', dataNic);
       console.log("sto aggiornando la carta giocata");
     }
 
@@ -773,8 +790,13 @@ concludere la mano
 
     console.log("Carta giocata: ", data);
 
+    var dataNic = {
+      data:data,
+      nickname:PLAYER_LIST[socket2[2].id].nickname,
+    }
+
     for(var k = 0; k<4; k++){
-      socket2[k].emit('aggiornaCarta', data);
+      socket2[k].emit('aggiornaCarta', dataNic);
       console.log("sto aggiornando la carta giocata");
     }
     //mando messaggio di stop
@@ -981,8 +1003,13 @@ concludere la mano
 
     console.log("Carta giocata: ", data);
 
+    var dataNic = {
+      data:data,
+      nickname:PLAYER_LIST[socket2[3].id].nickname,
+    }
+
     for(var k = 0; k<4; k++){
-      socket2[k].emit('aggiornaCarta', data);
+      socket2[k].emit('aggiornaCarta', dataNic);
       console.log("sto aggiornando la carta giocata");
     }
 
@@ -1386,10 +1413,20 @@ concludere la mano
       }
     }
 
-    socket2[0].emit('prese', prese1);
-    socket2[2].emit('prese', prese1);
-    socket2[1].emit('prese', prese2);
-    socket2[3].emit('prese', prese2);
+    var data1 = {
+      prese: prese1,
+      scope: scope1,
+    }
+
+    var data2 = {
+      prese: prese2,
+      scope: scope2,
+    }
+
+    socket2[0].emit('prese', data1);
+    socket2[2].emit('prese', data1);
+    socket2[1].emit('prese', data2);
+    socket2[3].emit('prese', data2);
 
     //CONTEGGIO DEI PUNTI
 

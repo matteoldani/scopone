@@ -361,8 +361,16 @@
       });
 
       socket.on('prese', function(data){
-        for(i in data){
-          var div = creaCarta(data[i]);
+        for(i in data.prese){
+          var div = creaCarta(data.prese[i]);
+          document.getElementById("mano").appendChild(div);
+        }
+        var h1 = document.createElement("h1");
+        h1.innerText="LE SCOPE FATTE SONO";
+        document.getElementById("mano").appendChild(h1);
+
+        for(i in data.scope){
+          var div = creaCarta(data.scope[i]);
           document.getElementById("mano").appendChild(div);
         }
       });
@@ -388,8 +396,9 @@
 
       socket.on("aggiornaCarta", function(data){
         console.log("qualcosa sta succedentro?0");
-        var div = creaCarta(data);
+        var div = creaCarta(data.data);
         div.id = "carta";
+        nomeUltimo.innerText = data.nickname;
         document.getElementById("carta").remove();
         lastPlayedCard.appendChild(div);
 
