@@ -1,0 +1,2 @@
+file communication handled by express library
+client-server data communication handled by socket.io library 
