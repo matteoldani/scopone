@@ -256,7 +256,7 @@ io.on("connection", socket => {
       for(var i=0; i<currentPlayers.length; i++){
         if(username == currentPlayers[i].username){
           controllo = 1;
-          socket.emit('usernameNotValid', {
+          socket.emit('connectionError', {
             error: 'username già usato nel tavolo',
           });
           break;
@@ -273,7 +273,7 @@ io.on("connection", socket => {
         });
       }
     }else{
-      socket.emit('fullTable', {
+      socket.emit('connectionError', {
         error: 'il tavolo è pieno',
       });
     }
@@ -304,6 +304,17 @@ io.on("connection", socket => {
       players: getTablePlayer(player.table)
     });
 
+  });
+
+  socket.on("initGame", ({username, table}) => {
+    players = getCurrentPlayerByUsername(username);
+    if(players.length == 4){
+      initGame(players);
+    }else{
+      socket.emit('connectionError', {
+        error: 'il tavolo non è pieno',
+      });
+    }
   })
 });
 
