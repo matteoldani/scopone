@@ -5,7 +5,8 @@ var server = require("http").createServer(app);
 
 const {
   playerJoin,
-  getCurrentPlayer,
+  getCurrentPlayerById,
+  getCurrentPlayerByUsername,
   playerLeave,
   getTablePlayer
 } = require("./utils/players");
@@ -268,12 +269,27 @@ io.on("connection", socket => {
     const player = playerLeave(socket.id);
     if (player) {
       // send users and room info
-      io.to(player.table).emit("roomUsers", {
+      io.to(player.table).emit("tablePlayers", {
         table: player.table,
         players: getTablePlayer(player.table)
       });
     }
   });
+
+  socket.on("changeTeam", (username) => {
+    player = getCurrentPlayerByUsername(username);
+    if(player.team == 0){
+      player.team = 1;
+    }else{
+      player.team = 0;
+    }
+
+    io.to(player.table).emit("tablePlayers", {
+      table: player.table,
+      players: getTablePlayer(player.table)
+    });
+
+  })
 });
 
 //non funzionante, non testate con acuratezza

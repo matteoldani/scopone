@@ -27,8 +27,12 @@ function playerJoin(id, username, table) {
   }
 
   // get current player
-  function getCurrentPlayer(id) {
+  function getCurrentPlayerById(id) {
     return players.find(player => player.id === id);
+  }
+
+  function getCurrentPlayerByUsername(username) {
+    return players.find(player => player.username === username);
   }
 
   // player leaves the game
@@ -46,7 +50,8 @@ function playerJoin(id, username, table) {
 
   module.exports = {
     playerJoin,
-    getCurrentPlayer,
+    getCurrentPlayerById,
+    getCurrentPlayerByUsername,
     playerLeave,
     getTablePlayer
   };
