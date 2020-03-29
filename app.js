@@ -262,9 +262,19 @@ io.on("connection", socket => {
       socket.emit("fullTable");
     }
 
-
   });
-})
+
+  socket.on("disconnect", () => {
+    const player = playerLeave(socket.id);
+    if (player) {
+      // send users and room info
+      io.to(player.table).emit("roomUsers", {
+        table: player.table,
+        players: getTablePlayer(player.table)
+      });
+    }
+  });
+});
 
 //non funzionante, non testate con acuratezza
 
