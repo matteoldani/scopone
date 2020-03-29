@@ -5,66 +5,79 @@ import io from "socket.io-client";
 import { Container, Row, Col, Button, Card, Form } from "react-bootstrap";
 
 let socket;
-const PLAYERS = [
-  { name: "alberto", team: 0 },
-  { name: "matteo", team: 0 },
-  { name: "bruno", team: 1 },
-  { name: "samuele", team: 1 }
-];
-const messages = [
-  { username: "alberto", time: "16:18", text: "ciao ciao" },
-  { username: "matteo", time: "16:19", text: "alberto sei intelligentissimo" },
-  { username: "alberto", time: "16:19", text: "grazie" }
-];
 
-const Team = ({ match }) => {
+// const messages = [
+//   { username: "alberto", time: "16:18", text: "ciao ciao" },
+//   { username: "matteo", time: "16:19", text: "alberto sei intelligentissimo" },
+//   { username: "alberto", time: "16:19", text: "grazie" }
+// ];
+
+const Team = ({ match, history }) => {
   const { username, table } = match.params;
-  const [players, setPlayers] = useState(PLAYERS);
+  const [players, setPlayers] = useState([]);
+  const [playerOne, setPlayerOne] = useState("");
+  const [teamSize, setTeamSize] = useState(0);
   const SERVER = "localhost:8080";
 
   const cambiaTeam = () => {
-    let temp = [...players];
-    let curr = temp.findIndex(player => player.name === username);
-    temp[curr].team = (temp[curr].team + 1) % 2;
-    setPlayers(temp);
+    socket.emit("changeTeam", { username });
   };
+
+  const gioca = () => {
+    socket.emit("initGame", { username, table });
+  };
+
+  const team1 = players.find(player => player.team === 0);
 
   useEffect(() => {
     socket = io(SERVER);
+
+    // join table
+    socket.emit("joinTable", match.params);
+
+    socket.on("connectionError", ({ error }) => {
+      alert(error);
+      //   socket.emit("forceDisconnect");
+      history.push("/");
+    });
+
+    // get players for current table
+    socket.on("tablePlayers", ({ table, players }) => {
+      setPlayers(players);
+      let count = 0;
+      players.map(player => (player.team === 0 ? (count += 1) : null));
+      setTeamSize(count);
+      console.log(count);
+      setPlayerOne(players[0].username);
+    });
+
     console.log(socket);
-  }, [SERVER, match]);
+  }, [SERVER, match, history]);
 
   return (
     <Container>
       <br />
-      <Row>
-        <Col sm={6}>
-          <p>
-            <span className="text-muted">Tavolo:</span> {table}
-            <span className="text-muted">Giocatore:</span> {username}
-          </p>
-        </Col>
-        <Col sm={6}>
-          <Button variant="outline-success" onClick={cambiaTeam}>
-            Cambia Team
-          </Button>
-        </Col>
-      </Row>
 
-      <br />
+      <p>
+        <span className="text-muted">Tavolo:</span> {table}{" "}
+      </p>
+      <p>
+        <span className="text-muted">Giocatore:</span> {username}
+      </p>
+
       <br />
       <Row>
         {[0, 1].map(team => (
           <Col key={team} sm={6}>
-            <h2 className="text-muted">Team {team + 1}</h2>
+            <h2 className="text-muted">Team {team + 1} </h2>
             <hr />
             {players.map(player =>
               player.team === team ? (
                 <h5
-                  key={player.name}
-                  className={username === player.name ? "text-success" : ""}
+                  key={player.id}
+                  className={username === player.username ? "text-success" : ""}
                 >
-                  {player.name}
+                  {player.username}
                 </h5>
               ) : null
             )}
@@ -73,22 +86,47 @@ const Team = ({ match }) => {
         ))}
       </Row>
       <br />
-      <Container>
+      <Row>
+        <Col sm={6}>
+          <br />
+          <Button
+            style={{ width: "100%" }}
+            variant="outline-success"
+            onClick={cambiaTeam}
+          >
+            Cambia Team
+          </Button>
+        </Col>
+        <Col sm={6}>
+          <br />
+          {username === playerOne ? (
+            <Button
+              disabled={players.length < 4 || teamSize !== 2}
+              style={{ width: "100%" }}
+              variant="success"
+              onClick={gioca}
+            >
+              Gioca Ora{" [ " + players.length + "/4 giocatori ]"}
+            </Button>
+          ) : null}
+        </Col>
+      </Row>
+      {/* <Container>
         <Card body>
           <Container className="messages">
             {messages.map(message => (
-              <>
+              <span>
                 <span className="text-muted">{message.time}</span>{" "}
                 <strong>{message.username}: </strong>
                 {message.text}
                 <br />
-              </>
+              </span>
             ))}
           </Container>
           <br />
           <Form.Control type="text" />
         </Card>
-      </Container>
+      </Container> */}
     </Container>
   );
 };
