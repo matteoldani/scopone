@@ -246,23 +246,22 @@ io.sockets.on("connection", function(socket) {
 
 io.on("connection", socket => {
   //join table
-  socket.on("joinTable", ({username, table}) => {
-
+  socket.on("joinTable", ({ username, table }) => {
     currentPlayers = getTablePlayer(table);
     var controllo = 0;
     //controllo che il tavolo non sia pieno
-    if(currentPlayers.length < 4){
+    if (currentPlayers.length < 4) {
       //controllo che lo username nel tavolo non sia gia usato
-      for(var i=0; i<currentPlayers.length; i++){
-        if(username == currentPlayers[i].username){
+      for (var i = 0; i < currentPlayers.length; i++) {
+        if (username == currentPlayers[i].username) {
           controllo = 1;
-          socket.emit('connectionError', {
-            error: 'username già usato nel tavolo',
+          socket.emit("connectionError", {
+            error: "username già usato nel tavolo"
           });
           break;
         }
       }
-      if(!controllo){
+      if (!controllo) {
         const player = playerJoin(socket.id, username, table);
 
         socket.join(player.table);
@@ -272,12 +271,11 @@ io.on("connection", socket => {
           players: getTablePlayer(player.table)
         });
       }
-    }else{
-      socket.emit('connectionError', {
-        error: 'il tavolo è pieno',
+    } else {
+      socket.emit("connectionError", {
+        error: "il tavolo è pieno"
       });
     }
-
   });
 
   socket.on("disconnect", () => {
@@ -291,11 +289,11 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("changeTeam", ({username}) => {
+  socket.on("changeTeam", ({ username }) => {
     player = getCurrentPlayerByUsername(username);
-    if(player.team == 0){
+    if (player.team == 0) {
       player.team = 1;
-    }else{
+    } else {
       player.team = 0;
     }
 
@@ -303,19 +301,14 @@ io.on("connection", socket => {
       table: player.table,
       players: getTablePlayer(player.table)
     });
-
   });
 
-  socket.on("initGame", ({username, table}) => {
+  socket.on("initGame", ({ username, table }) => {
     players = getCurrentPlayerByUsername(username);
-    if(players.length == 4){
+    if (players.length == 4) {
       initGame(players);
-    }else{
-      socket.emit('connectionError', {
-        error: 'il tavolo non è pieno',
-      });
     }
-  })
+  });
 });
 
 //non funzionante, non testate con acuratezza

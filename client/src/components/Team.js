@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import io from "socket.io-client";
 
 import { Container, Row, Col, Button, Card, Form } from "react-bootstrap";
+import { LinkContainer } from "react-router-bootstrap";
 
 let socket;
 
@@ -100,14 +101,16 @@ const Team = ({ match, history }) => {
         <Col sm={6}>
           <br />
           {username === playerOne ? (
-            <Button
-              disabled={players.length < 4 || teamSize !== 2}
-              style={{ width: "100%" }}
-              variant="success"
-              onClick={gioca}
-            >
-              Gioca Ora{" [ " + players.length + "/4 giocatori ]"}
-            </Button>
+            <LinkContainer to="/table">
+              <Button
+                disabled={players.length < 4 || teamSize !== 2}
+                style={{ width: "100%" }}
+                variant="success"
+                onClick={gioca}
+              >
+                Gioca Ora{" [ " + players.length + "/4 giocatori ]"}
+              </Button>
+            </LinkContainer>
           ) : null}
         </Col>
       </Row>
