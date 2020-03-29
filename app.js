@@ -30,6 +30,7 @@ var TABLE_LIST = {};
 var contatorePlayer = 0;
 var contatoreTavoli = 0;
 
+//cancellabile ma non ora perchè viene usato nel game initi
 var Player = function(nickname, socketID) {
   var self = {
     id: socketID,
@@ -134,6 +135,7 @@ var estrazioneCasuale = function() {
   return numeri;
 };
 
+//vecchia versione
 io.sockets.on("connection", function(socket) {
   console.log("socket connection");
 
@@ -239,6 +241,20 @@ io.sockets.on("connection", function(socket) {
     //ora ci affidaimo al buon senso
   });
 });
+
+io.on("connection", socket => {
+  //join table
+  socket.on("joinTable", ({username, table}) => {
+    const player = playerJoin(socket.id, username, table);
+    socket.join(player.table);
+
+    io.to(player.table).emit("tablePlayers", {
+      table: player.table,
+      players: getTablePlayer(player.table)
+    });
+
+  });
+})
 
 //non funzionante, non testate con acuratezza
 
