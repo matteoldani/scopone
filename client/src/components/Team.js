@@ -99,10 +99,9 @@ const Team = ({ match, history }) => {
         <Col sm={6}>
           <br />
           {username === playerOne ? (
-            <LinkContainer to="/table">
+            <LinkContainer to="/table" style={{ width: "100%" }}>
               <Button
                 disabled={players.length < 4 || teamSize !== 2}
-                style={{ width: "100%" }}
                 variant="success"
                 onClick={gioca}
               >
