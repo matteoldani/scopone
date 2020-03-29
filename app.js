@@ -30,23 +30,14 @@ var TABLE_LIST = {};
 var contatorePlayer = 0;
 var contatoreTavoli = 0;
 
-<<<<<<< HEAD
-var Player = function(nickname, socketID){
-  var self =  {
-    id:socketID,
-    nickname:nickname,
-    tavolo:null,
-    team:null,
-    mano: [],
-  }
-=======
 var Player = function(nickname, socketID) {
   var self = {
     id: socketID,
     nickname: nickname,
-    tavolo: null
+    tavolo: null,
+    team: null,
+    mano: []
   };
->>>>>>> 583d0fae4dd83237614a8c28412118af6145a710
 
   return self;
 };
@@ -289,40 +280,20 @@ var initGame = function(sockets) {
 
   var contatoreTurno = 1;
 
-<<<<<<< HEAD
-  for(var i = 0; i<10; i++){
-    mano1[i] = mazzo[numeri[i]-1];
-    
-=======
   for (var i = 0; i < 10; i++) {
     mano1[i] = mazzo[numeri[i] - 1];
->>>>>>> 583d0fae4dd83237614a8c28412118af6145a710
   }
   PLAYER_LIST[socket2[0]].mano = mano1;
   mani[0] = ordinaMano(mano1);
 
-<<<<<<< HEAD
-
-  for(var i = 10; i<20; i++){
-    mano2[i - 10] = mazzo[numeri[i]-1];
-    
-=======
   for (var i = 10; i < 20; i++) {
     mano2[i - 10] = mazzo[numeri[i] - 1];
->>>>>>> 583d0fae4dd83237614a8c28412118af6145a710
   }
   PLAYER_LIST[socket2[1]].mano = mano2;
   mani[1] = ordinaMano(mano2);
 
-<<<<<<< HEAD
-
-
-  for(var i = 20; i<30; i++){
-    mano3[i - 20] = mazzo[numeri[i]-1];
-=======
   for (var i = 20; i < 30; i++) {
     mano3[i - 20] = mazzo[numeri[i] - 1];
->>>>>>> 583d0fae4dd83237614a8c28412118af6145a710
   }
   PLAYER_LIST[socket2[2]].mano = mano3;
   mani[2] = ordinaMano(mano3);
@@ -1787,34 +1758,6 @@ concludere la mano
     socket2[3].emit("punti", puntiSquadra2);
   };
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
 cose da lascoate in sospeso:

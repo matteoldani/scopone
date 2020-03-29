@@ -37,13 +37,20 @@ const Team = ({ match }) => {
   return (
     <Container>
       <br />
-      <h3>
-        Tavolo: {table} - Giocatore: {username}
-      </h3>
-      <h3></h3>
-      <Button variant="success" onClick={cambiaTeam}>
-        Cambia Team
-      </Button>
+      <Row>
+        <Col sm={6}>
+          <p>
+            <span className="text-muted">Tavolo:</span> {table}
+            <span className="text-muted">Giocatore:</span> {username}
+          </p>
+        </Col>
+        <Col sm={6}>
+          <Button variant="outline-success" onClick={cambiaTeam}>
+            Cambia Team
+          </Button>
+        </Col>
+      </Row>
+
       <br />
       <br />
       <Row>
