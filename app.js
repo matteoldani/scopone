@@ -135,7 +135,7 @@ var estrazioneCasuale = function() {
   return numeri;
 };
 
-//vecchia versione
+/* vecchia versione
 io.sockets.on("connection", function(socket) {
   console.log("socket connection");
 
@@ -201,7 +201,7 @@ io.sockets.on("connection", function(socket) {
     for(var i in socketPartecipanti){
       socketPartecipanti[i].emit('partecipanti', pack);
     }
-    */
+
 
     for (var i in socketPartecipanti) {
       socketPartecipanti[i].emit("start", pack);
@@ -241,17 +241,27 @@ io.sockets.on("connection", function(socket) {
     //ora ci affidaimo al buon senso
   });
 });
+*/
 
 io.on("connection", socket => {
   //join table
   socket.on("joinTable", ({username, table}) => {
-    const player = playerJoin(socket.id, username, table);
-    socket.join(player.table);
 
-    io.to(player.table).emit("tablePlayers", {
-      table: player.table,
-      players: getTablePlayer(player.table)
-    });
+    currentPlayers = getTablePlayer(table);
+    if(currentPlayers.length < 4){
+
+      const player = playerJoin(socket.id, username, table);
+
+      socket.join(player.table);
+
+      io.to(player.table).emit("tablePlayers", {
+        table: player.table,
+        players: getTablePlayer(player.table)
+      });
+    }else{
+      socket.emit("fullTable");
+    }
+
 
   });
 })
