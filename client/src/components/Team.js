@@ -28,8 +28,6 @@ const Team = ({ match, history }) => {
     socket.emit("initGame", { username, table });
   };
 
-  const team1 = players.find(player => player.team === 0);
-
   useEffect(() => {
     socket = io(SERVER);
 
