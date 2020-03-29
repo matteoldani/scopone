@@ -280,6 +280,7 @@ io.on("connection", socket => {
 
   });
 
+  //default disconnect when a player leaves the page
   socket.on("disconnect", () => {
     const player = playerLeave(socket.id);
     if (player) {
@@ -291,6 +292,7 @@ io.on("connection", socket => {
     }
   });
 
+  //a player can change his team before the game
   socket.on("changeTeam", ({username}) => {
     player = getCurrentPlayerByUsername(username);
     if(player.team == 0){
@@ -306,16 +308,13 @@ io.on("connection", socket => {
 
   });
 
+  //starts the game
   socket.on("initGame", ({username, table}) => {
     players = getCurrentPlayerByUsername(username);
     if(players.length == 4){
       initGame(players);
-    }else{
-      socket.emit('connectionError', {
-        error: 'il tavolo non è pieno',
-      });
     }
-  })
+  });
 });
 
 //non funzionante, non testate con acuratezza
