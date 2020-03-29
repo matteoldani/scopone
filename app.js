@@ -3,6 +3,13 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 
+const {
+  playerJoin,
+  getCurrentPlayer,
+  playerLeave,
+  getTablePlayer
+} = require("./utils/players");
+
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
 app.get('/', function(req, res){
@@ -29,6 +36,8 @@ var Player = function(nickname, socketID){
     id:socketID,
     nickname:nickname,
     tavolo:null,
+    team:null,
+    mano: [],
   }
 
   return self;
@@ -279,30 +288,32 @@ var initGame = function(sockets){
 
   for(var i = 0; i<10; i++){
     mano1[i] = mazzo[numeri[i]-1];
+    
   }
-
+  PLAYER_LIST[socket2[0]].mano = mano1;
   mani[0] = ordinaMano(mano1);
 
 
   for(var i = 10; i<20; i++){
-    mano2[i - 10] = mazzo[numeri[i]-1]
+    mano2[i - 10] = mazzo[numeri[i]-1];
+    
   }
-
+  PLAYER_LIST[socket2[1]].mano = mano2;
   mani[1] = ordinaMano(mano2);
 
 
 
   for(var i = 20; i<30; i++){
-    mano3[i - 20] = mazzo[numeri[i]-1]
+    mano3[i - 20] = mazzo[numeri[i]-1];
   }
-
+  PLAYER_LIST[socket2[2]].mano = mano3;
   mani[2] = ordinaMano(mano3);
 
 
   for(var i = 30; i<40; i++){
     mano4[i - 30] = mazzo[numeri[i]-1]
   }
-
+  PLAYER_LIST[socket2[3]].mano = mano4;
   mani[3] = ordinaMano(mano4);
 
 
@@ -1747,6 +1758,34 @@ concludere la mano
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
