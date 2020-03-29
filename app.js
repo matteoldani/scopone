@@ -249,18 +249,33 @@ io.on("connection", socket => {
   socket.on("joinTable", ({username, table}) => {
 
     currentPlayers = getTablePlayer(table);
+    var controllo = 0;
+    //controllo che il tavolo non sia pieno
     if(currentPlayers.length < 4){
+      //controllo che lo username nel tavolo non sia gia usato
+      for(var i=0; i<currentPlayers.length; i++){
+        if(username == currentPlayers[i].username){
+          controllo = 1;
+          socket.emit('usernameNotValid', {
+            error: 'username già usato nel tavolo',
+          });
+          break;
+        }
+      }
+      if(!controllo){
+        const player = playerJoin(socket.id, username, table);
 
-      const player = playerJoin(socket.id, username, table);
+        socket.join(player.table);
 
-      socket.join(player.table);
-
-      io.to(player.table).emit("tablePlayers", {
-        table: player.table,
-        players: getTablePlayer(player.table)
-      });
+        io.to(player.table).emit("tablePlayers", {
+          table: player.table,
+          players: getTablePlayer(player.table)
+        });
+      }
     }else{
-      socket.emit("fullTable");
+      socket.emit('fullTable', {
+        error: 'il tavolo è pieno',
+      });
     }
 
   });
@@ -276,7 +291,7 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("changeTeam", (username) => {
+  socket.on("changeTeam", ({username}) => {
     player = getCurrentPlayerByUsername(username);
     if(player.team == 0){
       player.team = 1;
