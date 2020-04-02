@@ -2,16 +2,10 @@ import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router-dom";
 import io from "socket.io-client";
 
-import { Container, Row, Col, Button, Card, Form } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 
 let socket;
-
-// const messages = [
-//   { username: "alberto", time: "16:18", text: "ciao ciao" },
-//   { username: "matteo", time: "16:19", text: "alberto sei intelligentissimo" },
-//   { username: "alberto", time: "16:19", text: "grazie" }
-// ];
 
 const Team = ({ match, history }) => {
   const { username, table } = match.params;
@@ -111,22 +105,6 @@ const Team = ({ match, history }) => {
           ) : null}
         </Col>
       </Row>
-      {/* <Container>
-        <Card body>
-          <Container className="messages">
-            {messages.map(message => (
-              <span>
-                <span className="text-muted">{message.time}</span>{" "}
-                <strong>{message.username}: </strong>
-                {message.text}
-                <br />
-              </span>
-            ))}
-          </Container>
-          <br />
-          <Form.Control type="text" />
-        </Card>
-      </Container> */}
     </Container>
   );
 };
