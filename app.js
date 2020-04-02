@@ -314,7 +314,42 @@ io.on("connection", socket => {
   });
 });
 
-//non funzionante, non testate con acuratezza
+var initGame = function(platers){
+
+  var random = Math.floor(Math.random() * 4);
+  var scokets = [];
+  //ordino in base a un inizio casuale
+  for(var i=0; i<4; i++){
+    sockets[i] = players[random%4];
+  }
+  //sistemo in modo che i posti siano t1-t2-t1-t2
+  if(scokets[0].team == 0){
+    if(sockets[1].team == 0){
+      var temp = sockets[1];
+      sockets[1] = sockets[2];
+      sockets[2] = temp;
+    }else if(sockets[2] == 1){
+      var temp = sockets[2];
+      sockets[2] = sockets[3];
+      sockets[3] = temp;
+    }
+  }
+
+  if(scokets[0].team == 1){
+    if(sockets[1].team == 1){
+      var temp = sockets[1];
+      sockets[1] = sockets[2];
+      sockets[2] = temp;
+    }else if(sockets[2] == 0){
+      var temp = sockets[2];
+      sockets[2] = sockets[3];
+      sockets[3] = temp;
+    }
+  }
+  //sistemati
+
+  initGame(sockets, 0, 0);
+}
 
 var ordinaMano = function(mano) {
   for (i = 0; i < mano.length; i++) {
@@ -330,7 +365,16 @@ var ordinaMano = function(mano) {
   return mano;
 };
 
-var initGame = function(sockets) {
+var avanzaPosti = function(players){
+  var temp = platers[3];
+  for(var i=3; i<0;i--){
+    platers[i] = players[i-1];
+  }
+  players[0] = temp;
+  return players;
+}
+
+var giocaMano = function(sockets, puntiPrimoTeam, puntiSecondoTeam) {
   var mazzo = makeDeck();
   var numeri = estrazioneCasuale();
 
@@ -354,6 +398,41 @@ var initGame = function(sockets) {
 
   var contatoreTurno = 1;
 
+  //INVIO LISTA PLAYERS CON ORDINE DI GIOCATA
+  io.to(sockets[0].table).emit("tablePlayers", {
+    table: sockets[0].table,
+    players: getTablePlayer(sockets[0].table)
+  });
+
+  //ASSEGNO LA MANO AD OGNI PLAYER
+
+  for (var i = 0; i < 10; i++) {
+    mano1[i] = mazzo[numeri[i] - 1];
+  }
+  mani[0] = ordinaMano(mano1);
+  sockets[0].mano = mano[0];
+
+  for (var i = 10; i < 20; i++) {
+    mano2[i - 10] = mazzo[numeri[i] - 1];
+  }
+  mani[1] = ordinaMano(mano2);
+  sockets[1].mano = mano[1];
+
+  for (var i = 20; i < 30; i++) {
+    mano3[i - 20] = mazzo[numeri[i] - 1];
+  }
+  mani[2] = ordinaMano(mano3);
+  sockets[2].mano = mano[2];
+
+  for (var i = 30; i < 40; i++) {
+    mano4[i - 30] = mazzo[numeri[i] - 1];
+  }
+  mani[3] = ordinaMano(mano4);
+  sockets[3].mano = mano[3];
+
+  // FINISCO DI ASSEGNARE LA MANO AD OGNI PLAYER
+
+  /*  VECCHIA VERSIONE DISTRIBUZIONE MANI
   for (var i = 0; i < 10; i++) {
     mano1[i] = mazzo[numeri[i] - 1];
   }
@@ -382,6 +461,7 @@ var initGame = function(sockets) {
   for (var i = 0; i < 4; i++) {
     sockets[i].emit("mano", mani[i]);
   }
+  */
 
   /*IMPLEMENTERO' PIU' AVANTI QUESTA FEATURE
 
@@ -438,7 +518,7 @@ concludere la mano
 
     var dataNic = {
       data: data,
-      nickname: PLAYER_LIST[socket2[0].id].nickname
+      nickname: socket2[0].username
     };
 
     console.log("Carta giocata: ", data);
@@ -662,7 +742,7 @@ concludere la mano
 
     var dataNic = {
       data: data,
-      nickname: PLAYER_LIST[socket2[1].id].nickname
+      nickname: socket2[1].username
     };
 
     for (var k = 0; k < 4; k++) {
@@ -878,7 +958,7 @@ concludere la mano
 
     var dataNic = {
       data: data,
-      nickname: PLAYER_LIST[socket2[2].id].nickname
+      nickname: socket2[2].username
     };
 
     for (var k = 0; k < 4; k++) {
@@ -1100,7 +1180,7 @@ concludere la mano
 
     var dataNic = {
       data: data,
-      nickname: PLAYER_LIST[socket2[3].id].nickname
+      nickname: socket2[3].username
     };
 
     for (var k = 0; k < 4; k++) {
@@ -1304,8 +1384,7 @@ concludere la mano
     }
   });
 
-  /*
-  struttura dati nella unzione procedi
+  /*  struttura dati nella unzione procedi
 
     caso: 0/1/2/3 a seconda di quante carte prese con la somma
     data: carte[] array con le carte prese
@@ -1830,8 +1909,38 @@ concludere la mano
     socket2[2].emit("punti", puntiSquadra1);
     socket2[1].emit("punti", puntiSquadra2);
     socket2[3].emit("punti", puntiSquadra2);
+
+    //CODICE NUOVO PER SIMULARE UN INTERA partita
+    puntiSquadra1 += punti1;
+    puntiSquadra2 += punti2;
+    if(puntiSquadra1 >=21){
+      if(puntiSquadra2<21){
+        //vince la parita la squadra 1;
+      }else{
+        if(puntiSquadra1 > puntiSquadra2){
+          //vince la partita la squadra 1;
+        }else{
+          if(puntiSquadra1 == puntiSquadra2){
+            sockets = avanzaPosti(sockets);
+            initGame(sockets, puntiSquadra2, puntiSquadra1);
+          }else{
+            //vince squadra 2;
+          }
+        }
+      }
+    }else if(puntiSquadra2 >= 21){
+      //vince squadra 2;
+    }else{
+      sockets = avanzaPosti(sockets);
+      initGame(sockets, puntiSquadra2, puntiSquadra1);
+    }
+    
   };
 };
+
+
+
+
 
 /*
 cose da lascoate in sospeso:
