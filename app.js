@@ -24,64 +24,6 @@ server.listen(8080, () => console.log("server started"));
 //inizializzo sockert.io che andrà inserito anche dentro l'index.html
 var io = require("socket.io")(server, {});
 
-var SOCKET_LIST = {};
-var PLAYER_LIST = {};
-var TABLE_LIST = {};
-
-var contatorePlayer = 0;
-var contatoreTavoli = 0;
-
-//cancellabile ma non ora perchè viene usato nel game initi
-var Player = function(nickname, socketID) {
-  var self = {
-    id: socketID,
-    nickname: nickname,
-    tavolo: null,
-    team: null,
-    mano: []
-  };
-
-  return self;
-};
-
-var CheckNum = function() {
-  do {
-    var trovato = false;
-    var num = Math.floor(Math.random() * 100);
-    for (var i in TABLE_LIST.length) {
-      if (TABLE_LIST[i].id == num) {
-        trovato == true;
-      }
-    }
-  } while (trovato);
-
-  return num;
-};
-
-var Table = function(player, nome) {
-  var self = {
-    id: CheckNum(),
-    player1: player,
-    player2: null,
-    player3: null,
-    player4: null,
-    numPart: 1,
-    nome: nome,
-
-    addPlayer: function(player) {
-      if (self.player2 == null) {
-        self.player2 = player;
-      } else if (self.player3 == null) {
-        self.player3 = player;
-      } else if (self.player4 == null) {
-        self.player4 = player;
-      } else {
-        console.log("tavolo pieno");
-      }
-    }
-  };
-  return self;
-};
 
 var Carta = function(seme, valore) {
   var self = {
@@ -136,113 +78,6 @@ var estrazioneCasuale = function() {
   return numeri;
 };
 
-/* vecchia versione
-io.sockets.on("connection", function(socket) {
-  console.log("socket connection");
-
-  //assegno un numero al socket e lo aggiungo alla lista dei socket
-  socket.id = Math.random();
-  SOCKET_LIST[socket.id] = socket;
-
-  //ricevo il nome del giocatore e creo il player
-  socket.on("nickname", function(data) {
-    PLAYER_LIST[socket.id] = Player(data.nickname, socket.id);
-    contatorePlayer++;
-    console.log(PLAYER_LIST[socket.id]);
-  });
-
-  //viene inviato al socket il numero del tavolo da condividere con i player
-  var emitTable = function(num) {
-    socket.emit("tableNum", {
-      num: num
-    });
-  };
-
-  //richiesta creazione tavolo
-  socket.on("creazione", function(data) {
-    TABLE_LIST[contatoreTavoli] = Table(PLAYER_LIST[socket.id], data.nome);
-    PLAYER_LIST[socket.id].tavolo = TABLE_LIST[contatoreTavoli].id;
-    emitTable(TABLE_LIST[contatoreTavoli].id);
-    contatoreTavoli++;
-    console.log(TABLE_LIST[contatoreTavoli]);
-  });
-
-  //mostro i giocatori nel tavolo inviando al client la lista aggiornata di tutti i partecipanti
-  var findTableWithNumber = function(number) {
-    var trovato = false;
-    var i = 0;
-    while (!trovato && i < contatoreTavoli) {
-      if (TABLE_LIST[i].id == number) {
-        trovato = true;
-        return i;
-      }
-      i++;
-    }
-    return -1;
-  };
-
-  //vengono salvati i partecipanti a un tavolo da inviare una volta che il tavolo è completo.
-  var partercipanti = function(numTable) {
-    var socketPartecipanti = {};
-    var number = findTableWithNumber(numTable);
-    socketPartecipanti[0] = SOCKET_LIST[TABLE_LIST[number].player1.id];
-    socketPartecipanti[1] = SOCKET_LIST[TABLE_LIST[number].player2.id];
-    socketPartecipanti[2] = SOCKET_LIST[TABLE_LIST[number].player3.id];
-    socketPartecipanti[3] = SOCKET_LIST[TABLE_LIST[number].player4.id];
-
-    var pack = {
-      num: numTable,
-      player1: PLAYER_LIST[socketPartecipanti[0].id].nickname,
-      player2: PLAYER_LIST[socketPartecipanti[1].id].nickname,
-      player3: PLAYER_LIST[socketPartecipanti[2].id].nickname,
-      player4: PLAYER_LIST[socketPartecipanti[3].id].nickname
-    };
-
-    /*
-    for(var i in socketPartecipanti){
-      socketPartecipanti[i].emit('partecipanti', pack);
-    }
-
-
-    for (var i in socketPartecipanti) {
-      socketPartecipanti[i].emit("start", pack);
-    }
-
-    initGame(socketPartecipanti);
-  };
-
-  //il client invia la richiesta di unirsi a un tavolo, nel data ci sarà il numero del tavolo e la posizione del player
-  socket.on("join", function(data) {
-    //ricerco se il tavolo esiste e inserisco il giocatore
-    var trovato = false;
-    var i = 0;
-    PLAYER_LIST[socket.id].tavolo = data.num;
-    while (!trovato && i < contatoreTavoli) {
-      if (TABLE_LIST[i].id == data.num) {
-        trovato = true;
-        TABLE_LIST[i].addPlayer(PLAYER_LIST[socket.id]);
-        TABLE_LIST[i].numPart++;
-        if (TABLE_LIST[i].numPart == 4) {
-          partercipanti(TABLE_LIST[i].id);
-        }
-      }
-      console.log(
-        "ho trovato il tavolo e ha " + TABLE_LIST[i].numPart + " partecipanti"
-      );
-      i++;
-    }
-  });
-
-  //elimino il socket quando si disconnette
-  socket.on("disconnect", function() {
-    delete SOCKET_LIST[socket.id];
-    delete PLAYER_LIST[socket.id];
-    contatorePlayer--;
-    //bisogna aggiungere che vengono eliminati i tavoli dove i player se ne vanno ma lo faremo più
-    //ora ci affidaimo al buon senso
-  });
-});
-*/
 
 io.on("connection", socket => {
   //join table
@@ -262,7 +97,7 @@ io.on("connection", socket => {
         }
       }
       if (!controllo) {
-        const player = playerJoin(socket.id, username, table);
+        const player = playerJoin(socket, socket.id, username, table);
 
         socket.join(player.table);
 
@@ -348,7 +183,7 @@ var initGame = function(platers){
   }
   //sistemati
 
-  initGame(sockets, 0, 0);
+  giocaMano(sockets, 0, 0);
 }
 
 var ordinaMano = function(mano) {
@@ -398,12 +233,6 @@ var giocaMano = function(sockets, puntiPrimoTeam, puntiSecondoTeam) {
 
   var contatoreTurno = 1;
 
-  //INVIO LISTA PLAYERS CON ORDINE DI GIOCATA
-  io.to(sockets[0].table).emit("tablePlayers", {
-    table: sockets[0].table,
-    players: getTablePlayer(sockets[0].table)
-  });
-
   //ASSEGNO LA MANO AD OGNI PLAYER
 
   for (var i = 0; i < 10; i++) {
@@ -432,59 +261,6 @@ var giocaMano = function(sockets, puntiPrimoTeam, puntiSecondoTeam) {
 
   // FINISCO DI ASSEGNARE LA MANO AD OGNI PLAYER
 
-  /*  VECCHIA VERSIONE DISTRIBUZIONE MANI
-  for (var i = 0; i < 10; i++) {
-    mano1[i] = mazzo[numeri[i] - 1];
-  }
-  PLAYER_LIST[socket2[0]].mano = mano1;
-  mani[0] = ordinaMano(mano1);
-
-  for (var i = 10; i < 20; i++) {
-    mano2[i - 10] = mazzo[numeri[i] - 1];
-  }
-  PLAYER_LIST[socket2[1]].mano = mano2;
-  mani[1] = ordinaMano(mano2);
-
-  for (var i = 20; i < 30; i++) {
-    mano3[i - 20] = mazzo[numeri[i] - 1];
-  }
-  PLAYER_LIST[socket2[2]].mano = mano3;
-  mani[2] = ordinaMano(mano3);
-
-  for (var i = 30; i < 40; i++) {
-    mano4[i - 30] = mazzo[numeri[i] - 1];
-  }
-  PLAYER_LIST[socket2[3]].mano = mano4;
-  mani[3] = ordinaMano(mano4);
-
-  //invio le mani ai vari player
-  for (var i = 0; i < 4; i++) {
-    sockets[i].emit("mano", mani[i]);
-  }
-  */
-
-  /*IMPLEMENTERO' PIU' AVANTI QUESTA FEATURE
-
-  //stabilisco chi deve iniziare
-  var cas = Math.floor(Math.random()*4);
-
-  //ordino i socket così che il primo a giocare sia anche il primo della lista senza rovinare l'ordine
-  var socket2 = [];
-  var i;
-  var j = 0;
-
-  for(i=cas;i<4;i++){
-    socket2[j] = sockets[i];
-    j++;
-  }
-
-  for(i = 0;i<cas;i++){
-    socket2[j] = sockets[i];
-    j++;
-
-  }
-  */
-
   var socket2 = [];
   socket2 = sockets;
 
@@ -496,10 +272,17 @@ concludere la mano
 */
 
   //invio le posizioni iniziali, solo il primo giocatore può mandare la carta
-  socket2[0].emit("play");
-  socket2[1].emit("stop");
-  socket2[2].emit("stop");
-  socket2[3].emit("stop");
+  socket2[0].socket.emit("play");
+  socket2[0].isPlaying = 1;
+  socket2[1].socket.emit("stop");
+  socket2[2].socket.emit("stop");
+  socket2[3].socket.emit("stop");
+
+  //INVIO LISTA PLAYERS CON ORDINE DI GIOCATA
+  io.to(sockets[0].table).emit("tablePlayers", {
+    table: sockets[0].table,
+    players: getTablePlayer(sockets[0].table)
+  });
 
   //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
 
@@ -509,7 +292,7 @@ concludere la mano
   var carte = [];
 
   //ricevo la carta dal primo giocatore
-  socket2[0].on("card", function(data) {
+  socket2[0].socket.on("card", function(data) {
     //variabili di controllo che evitano che faccia cose inutili
     presa = 0;
     somma = 0;
@@ -524,11 +307,12 @@ concludere la mano
     console.log("Carta giocata: ", data);
 
     for (var k = 0; k < 4; k++) {
-      socket2[k].emit("aggiornaCarta", dataNic);
+      socket2[k].socket.emit("aggiornaCarta", dataNic);
       console.log("sto aggiornando la carta giocata");
     }
     //mando messaggio di stop
-    socket2[0].emit("stop");
+    socket2[0].socket.emit("stop");
+    socket2[0].isPlaying = 0;
     //logiche di gestione del gioco, scope prese punti
     //tolgo la carta dalla mano del giocatore
     console.log("Rimuovo la caera giocata dalla mano del giocatore");
@@ -579,7 +363,7 @@ concludere la mano
           carte.push(campo[i]);
           carte.push(data);
           for (var j in socket2) {
-            socket2[j].emit("removeCardFromCampo", carte);
+            socket2[j].socket.emit("removeCardFromCampo", carte);
           }
           console.log("ho inviato le carte da togliere");
           //svuoto l'array carte cos' da poterlo riuatilizzare
@@ -710,25 +494,25 @@ concludere la mano
         //ho più possibilità, faccio scegliere dal client
         //mando un messaggio generico
         if (contaSomme > 1) {
-          socket2[0].emit("sommeMultiple", campo);
+          socket2[0].socket.emit("sommeMultiple", campo);
 
-          /*socket2[0].emit('wait');
-          socket2[1].emit('wait');
-          socket2[2].emit('wait');
-          socket2[3].emit('wait');*/
+          /*socket2[0].socket.emit('wait');
+          socket2[1].socket.emit('wait');
+          socket2[2].socket.emit('wait');
+          socket2[3].socket.emit('wait');*/
 
           ultimaPresa = 1;
           console.log("ho troavto più somme possibili");
           //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
           prese1.push(data);
         } else {
-          socket2[0].emit("avanti");
+          socket2[0].socket.emit("avanti");
         }
       } else {
-        socket2[0].emit("avanti");
+        socket2[0].socket.emit("avanti");
       }
     } else {
-      socket2[0].emit("avanti");
+      socket2[0].socket.emit("avanti");
     }
   });
 
@@ -746,11 +530,12 @@ concludere la mano
     };
 
     for (var k = 0; k < 4; k++) {
-      socket2[k].emit("aggiornaCarta", dataNic);
+      socket2[k].socket.emit("aggiornaCarta", dataNic);
       console.log("sto aggiornando la carta giocata");
     }
 
-    socket2[1].emit("stop");
+    socket2[1].socket.emit("stop");
+    socket2[1].isPlaying = 0;
 
     for (var i = 0; i < mani[1].length; i++) {
       if (mani[1][i].valore == data.valore && mani[1][i].seme == data.seme) {
@@ -798,7 +583,7 @@ concludere la mano
           carte.push(campo[i]);
           carte.push(data);
           for (var j in socket2) {
-            socket2[j].emit("removeCardFromCampo", carte);
+            socket2[j].socket.emit("removeCardFromCampo", carte);
           }
           console.log("ho inviato le carte da togliere");
           //svuoto l'array carte cos' da poterlo riuatilizzare
@@ -924,26 +709,26 @@ concludere la mano
         //la uso nel caso di più somme per capire se rimanere in attesa della rispposta del client o se andare avanti
 
         if (contaSomme > 1) {
-          socket2[1].emit("sommeMultiple", campo);
+          socket2[1].socket.emit("sommeMultiple", campo);
 
-          /*socket2[0].emit('wait');
-          socket2[1].emit('wait');
-          socket2[2].emit('wait');
-          socket2[3].emit('wait');*/
+          /*socket2[0].socket.emit('wait');
+          socket2[1].socket.emit('wait');
+          socket2[2].socket.emit('wait');
+          socket2[3].socket.emit('wait');*/
 
           ultimaPresa = 2;
           console.log("ho troavto più somme possibili");
           //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
           prese2.push(data);
         } else {
-          socket2[1].emit("avanti");
+          socket2[1].socket.emit("avanti");
           console.log("sto mandando il segnale di avanti");
         }
       } else {
-        socket2[1].emit("avanti");
+        socket2[1].socket.emit("avanti");
       }
     } else {
-      socket2[1].emit("avanti");
+      socket2[1].socket.emit("avanti");
     }
   });
 
@@ -962,11 +747,12 @@ concludere la mano
     };
 
     for (var k = 0; k < 4; k++) {
-      socket2[k].emit("aggiornaCarta", dataNic);
+      socket2[k].socket.emit("aggiornaCarta", dataNic);
       console.log("sto aggiornando la carta giocata");
     }
     //mando messaggio di stop
-    socket2[2].emit("stop");
+    socket2[2].socket.emit("stop");
+    socket2[2].isPlaying = 0;
     //logiche di gestione del gioco, scope prese punti
     //tolgo la carta dalla mano del giocatore
     console.log("Rimuovo la caera giocata dalla mano del giocatore");
@@ -1017,7 +803,7 @@ concludere la mano
           carte.push(campo[i]);
           carte.push(data);
           for (var j in socket2) {
-            socket2[j].emit("removeCardFromCampo", carte);
+            socket2[j].socket.emit("removeCardFromCampo", carte);
           }
           console.log("ho inviato le carte da togliere");
           //svuoto l'array carte cos' da poterlo riuatilizzare
@@ -1148,25 +934,25 @@ concludere la mano
         //ho più possibilità, faccio scegliere dal client
         //mando un messaggio generico
         if (contaSomme > 1) {
-          socket2[2].emit("sommeMultiple", campo);
+          socket2[2].socket.emit("sommeMultiple", campo);
 
-          /*socket2[0].emit('wait');
-          socket2[1].emit('wait');
-          socket2[2].emit('wait');
-          socket2[3].emit('wait');*/
+          /*socket2[0].socket.emit('wait');
+          socket2[1].socket.emit('wait');
+          socket2[2].socket.emit('wait');
+          socket2[3].socket.emit('wait');*/
 
           ultimaPresa = 1;
           console.log("ho troavto più somme possibili");
           //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
           prese1.push(data);
         } else {
-          socket2[2].emit("avanti");
+          socket2[2].socket.emit("avanti");
         }
       } else {
-        socket2[2].emit("avanti");
+        socket2[2].socket.emit("avanti");
       }
     } else {
-      socket2[2].emit("avanti");
+      socket2[2].socket.emit("avanti");
     }
   });
 
@@ -1184,11 +970,12 @@ concludere la mano
     };
 
     for (var k = 0; k < 4; k++) {
-      socket2[k].emit("aggiornaCarta", dataNic);
+      socket2[k].socket.emit("aggiornaCarta", dataNic);
       console.log("sto aggiornando la carta giocata");
     }
 
-    socket2[3].emit("stop");
+    socket2[3].socket.emit("stop");
+    socket2[3].isPlaying = 0;
 
     for (var i = 0; i < mani[3].length; i++) {
       if (mani[3][i].valore == data.valore && mani[3][i].seme == data.seme) {
@@ -1236,7 +1023,7 @@ concludere la mano
           carte.push(campo[i]);
           carte.push(data);
           for (var j in socket2) {
-            socket2[j].emit("removeCardFromCampo", carte);
+            socket2[j].socket.emit("removeCardFromCampo", carte);
           }
           console.log("ho inviato le carte da togliere");
           //svuoto l'array carte cos' da poterlo riuatilizzare
@@ -1362,25 +1149,25 @@ concludere la mano
         //la uso nel caso di più somme per capire se rimanere in attesa della rispposta del client o se andare avanti
 
         if (contaSomme > 1) {
-          socket2[3].emit("sommeMultiple", campo);
+          socket2[3].socket.emit("sommeMultiple", campo);
 
-          /*socket2[0].emit('wait');
-          socket2[1].emit('wait');
-          socket2[2].emit('wait');
-          socket2[3].emit('wait');*/
+          /*socket2[0].socket.emit('wait');
+          socket2[1].socket.emit('wait');
+          socket2[2].socket.emit('wait');
+          socket2[3].socket.emit('wait');*/
 
           ultimaPresa = 2;
           console.log("ho troavto più somme possibili");
           //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
           prese2.push(data);
         } else {
-          socket2[3].emit("avanti");
+          socket2[3].socket.emit("avanti");
         }
       } else {
-        socket2[3].emit("avanti");
+        socket2[3].socket.emit("avanti");
       }
     } else {
-      socket2[3].emit("avanti");
+      socket2[3].socket.emit("avanti");
     }
   });
 
@@ -1411,7 +1198,7 @@ concludere la mano
 
     console.log("invio le carte da togliere perchè sono state prese");
     for (var i in socket2) {
-      socket2[i].emit("removeCardFromCampo", carte);
+      socket2[i].socket.emit("removeCardFromCampo", carte);
     }
 
     //pulisco array carte
@@ -1420,11 +1207,17 @@ concludere la mano
     console.log("sto per mandare di disefnare il campo");
     console.log("questo è il campo: \n", campo);
     for (i in socket2) {
-      socket2[i].emit("drawCampo", campo);
+      socket2[i].socket.emit("drawCampo", campo);
     }
     console.log("dovrei aver diseganto il campo");
     //invio il messaggio che il secondo giocatore puo mandare la sua Carta
-    socket2[1].emit("play");
+    socket2[1].socket.emit("play");
+    socket2[1].isPlaying = 1;
+    io.to(sockets[0].table).emit("tablePlayers", {
+      table: sockets[0].table,
+      players: getTablePlayer(sockets[0].table)
+    });
+
   });
 
   socket2[1].on("procedi", function(data) {
@@ -1447,7 +1240,7 @@ concludere la mano
 
     console.log("invio le carte da togliere perchè sono state prese");
     for (var i in socket2) {
-      socket2[i].emit("removeCardFromCampo", carte);
+      socket2[i].socket.emit("removeCardFromCampo", carte);
     }
 
     //pulisco array carte
@@ -1456,11 +1249,16 @@ concludere la mano
     console.log("sto per mandare di disefnare il campo");
     console.log("questo è il campo: \n", campo);
     for (i in socket2) {
-      socket2[i].emit("drawCampo", campo);
+      socket2[i].socket.emit("drawCampo", campo);
     }
     console.log("dovrei aver diseganto il campo");
     //invio il messaggio che il secondo giocatore puo mandare la sua Carta
-    socket2[2].emit("play");
+    socket2[2].socket.emit("play");
+    socket2[2].isPlaying = 1;
+    io.to(sockets[0].table).emit("tablePlayers", {
+      table: sockets[0].table,
+      players: getTablePlayer(sockets[0].table)
+    });
   });
 
   socket2[2].on("procedi", function(data) {
@@ -1483,7 +1281,7 @@ concludere la mano
 
     console.log("invio le carte da togliere perchè sono state prese");
     for (var i in socket2) {
-      socket2[i].emit("removeCardFromCampo", carte);
+      socket2[i].socket.emit("removeCardFromCampo", carte);
     }
 
     //pulisco array carte
@@ -1492,11 +1290,16 @@ concludere la mano
     console.log("sto per mandare di disefnare il campo");
     console.log("questo è il campo: \n", campo);
     for (i in socket2) {
-      socket2[i].emit("drawCampo", campo);
+      socket2[i].socket.emit("drawCampo", campo);
     }
     console.log("dovrei aver diseganto il campo");
     //invio il messaggio che il secondo giocatore puo mandare la sua Carta
-    socket2[3].emit("play");
+    socket2[3].socket.emit("play");
+    socket2[3].isPlaying = 1;
+    io.to(sockets[0].table).emit("tablePlayers", {
+      table: sockets[0].table,
+      players: getTablePlayer(sockets[0].table)
+    });
   });
 
   socket2[3].on("procedi", function(data) {
@@ -1519,7 +1322,7 @@ concludere la mano
 
     console.log("invio le carte da togliere perchè sono state prese");
     for (var i in socket2) {
-      socket2[i].emit("removeCardFromCampo", carte);
+      socket2[i].socket.emit("removeCardFromCampo", carte);
     }
 
     //pulisco array carte
@@ -1528,33 +1331,39 @@ concludere la mano
     console.log("sto per mandare di disefnare il campo");
     console.log("questo è il campo: \n", campo);
     for (i in socket2) {
-      socket2[i].emit("drawCampo", campo);
+      socket2[i].socket.emit("drawCampo", campo);
     }
     console.log("dovrei aver diseganto il campo");
     //invio il messaggio che il secondo giocatore puo mandare la sua Carta
     if (contatoreTurno != 10) {
       contatoreTurno++;
-      socket2[0].emit("play");
+      socket2[0].socket.emit("play");
+      socket2[0].isPlaying = 1;
+      io.to(sockets[0].table).emit("tablePlayers", {
+        table: sockets[0].table,
+        players: getTablePlayer(sockets[0].table)
+      });
     } else {
       //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
       endGame(prese1, prese2, socket2);
     }
   });
 
+
   socket2[0].on("reSommeMultiple", function() {
-    socket2[0].emit("sommeMultiple", campo);
+    socket2[0].socket.emit("sommeMultiple", campo);
   });
 
   socket2[1].on("reSommeMultiple", function() {
-    socket2[1].emit("sommeMultiple", campo);
+    socket2[1].socket.emit("sommeMultiple", campo);
   });
 
   socket2[2].on("reSommeMultiple", function() {
-    socket2[2].emit("sommeMultiple", campo);
+    socket2[2].socket.emit("sommeMultiple", campo);
   });
 
   socket2[3].on("reSommeMultiple", function() {
-    socket2[3].emit("sommeMultiple", campo);
+    socket2[3].socket.emit("sommeMultiple", campo);
   });
 
   var endGame = function() {
@@ -1580,10 +1389,10 @@ concludere la mano
       scope: scope2
     };
 
-    socket2[0].emit("prese", data1);
-    socket2[2].emit("prese", data1);
-    socket2[1].emit("prese", data2);
-    socket2[3].emit("prese", data2);
+    socket2[0].socket.emit("prese", data1);
+    socket2[2].socket.emit("prese", data1);
+    socket2[1].socket.emit("prese", data2);
+    socket2[3].socket.emit("prese", data2);
 
     //CONTEGGIO DEI PUNTI
 
@@ -1905,10 +1714,10 @@ concludere la mano
       p: punti2
     };
 
-    socket2[0].emit("punti", puntiSquadra1);
-    socket2[2].emit("punti", puntiSquadra1);
-    socket2[1].emit("punti", puntiSquadra2);
-    socket2[3].emit("punti", puntiSquadra2);
+    socket2[0].socket.emit("punti", puntiSquadra1);
+    socket2[2].socket.emit("punti", puntiSquadra1);
+    socket2[1].socket.emit("punti", puntiSquadra2);
+    socket2[3].socket.emit("punti", puntiSquadra2);
 
     //CODICE NUOVO PER SIMULARE UN INTERA partita
     puntiSquadra1 += punti1;
@@ -1932,7 +1741,7 @@ concludere la mano
       //vince squadra 2;
     }else{
       sockets = avanzaPosti(sockets);
-      initGame(sockets, puntiSquadra2, puntiSquadra1);
+      giocaMano(sockets, puntiSquadra2, puntiSquadra1);
     }
     
   };
