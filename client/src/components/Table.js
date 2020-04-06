@@ -1,10 +1,12 @@
 import React from "react";
 
+import { Container } from "react-bootstrap";
+
 const Table = () => {
   return (
-    <div>
+    <Container fluid style={{ backgroundColor: "#28a745", height: "100vh" }}>
       <h1>Hello table</h1>
-    </div>
+    </Container>
   );
 };
 

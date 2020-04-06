@@ -38,10 +38,14 @@ const Team = ({ match, history }) => {
     socket.on("tablePlayers", ({ table, players }) => {
       setPlayers(players);
       let count = 0;
-      players.map(player => (player.team === 0 ? (count += 1) : null));
+      players.map((player) => (player.team === 0 ? (count += 1) : null));
       setTeamSize(count);
       console.log(count);
       setPlayerOne(players[0].username);
+    });
+
+    socket.on("gameIsStarting", () => {
+      history.push("/table");
     });
 
     console.log(socket);
@@ -60,11 +64,11 @@ const Team = ({ match, history }) => {
 
       <br />
       <Row>
-        {[0, 1].map(team => (
+        {[0, 1].map((team) => (
           <Col key={team} sm={6}>
             <h2 className="text-muted">Team {team + 1} </h2>
             <hr />
-            {players.map(player =>
+            {players.map((player) =>
               player.team === team ? (
                 <h5
                   key={player.id}
@@ -93,15 +97,14 @@ const Team = ({ match, history }) => {
         <Col sm={6}>
           <br />
           {username === playerOne ? (
-            <LinkContainer to="/table" style={{ width: "100%" }}>
-              <Button
-                disabled={players.length < 4 || teamSize !== 2}
-                variant="success"
-                onClick={gioca}
-              >
-                Gioca Ora{" [ " + players.length + "/4 giocatori ]"}
-              </Button>
-            </LinkContainer>
+            <Button
+              style={{ width: "100%" }}
+              disabled={players.length < 4 || teamSize !== 2}
+              variant="success"
+              onClick={gioca}
+            >
+              Gioca Ora{" [ " + players.length + "/4 giocatori ]"}
+            </Button>
           ) : null}
         </Col>
       </Row>
