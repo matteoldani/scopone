@@ -1,8 +1,8 @@
 const players = [];
 
 // join player to the table
-function playerJoin(id, username, table) {
-    const player = { id, username, table, team:0, mano:[]};
+function playerJoin(socket, id, username, table) {
+    const player = { socket, id, username, table, team:0, mano:[], isPlaying:0};
 
     //assegno il team
     currentPlayers = getTablePlayer(table);
