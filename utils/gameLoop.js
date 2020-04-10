@@ -4,7 +4,7 @@ const {
   getCurrentPlayerByUsername,
   playerLeave,
   getTablePlayer,
-} = require("./utils/players");
+} = require("./players");
 
 //oggetto che definsce la carte
 var Carta = function (seme, valore) {
@@ -182,7 +182,7 @@ var giocaMano = function (sockets, puntiPrimoTeam, puntiSecondoTeam) {
   // FINISCO DI ASSEGNARE LA MANO AD OGNI PLAYER E INVIARLE AL CLIENT
 };
 
-modeule.exports = {
+module.exports = {
   giocaMano,
   initGame,
 };

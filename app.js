@@ -44,14 +44,14 @@ io.on("connection", (socket) => {
         }
       }
       if (!controllo) {
-        const player = playerJoin(socket, socket.id, username, table);
+        const player = playerJoin(socket.id, username, table);
         console.log(player);
         socket.join(player.table);
 
-        /* io.to(player.table).emit("tablePlayers", {
+        io.to(player.table).emit("tablePlayers", {
           table: player.table,
-          players: getTablePlayer(player.table)
-        });*/
+          players: getTablePlayer(player.table),
+        });
       }
     } else {
       socket.emit("connectionError", {
@@ -90,6 +90,9 @@ io.on("connection", (socket) => {
   //starts the game
   socket.on("initGame", ({ username, table }) => {
     players = getCurrentPlayerByUsername(username);
+    for (var i = 0; i < 4; i++) {
+      players[i].socket = io.sockets.connected(players[i].id);
+    }
     if (players.length == 4) {
       initGame(players);
     }
