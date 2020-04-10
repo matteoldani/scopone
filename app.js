@@ -105,7 +105,7 @@ io.on("connection", (socket) => {
 });
 
 var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
-  var socketsList;
+  var socketsList = [];
   var mazzo = makeDeck();
   //mischio il mazzo
   var numeri = estrazioneCasuale();
@@ -142,18 +142,18 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
     io.to(players[j / 10].id).emit("playerData", { player: players[j / 10] });
   }
   //salvo la lista dei socket dei giocatori
-  for(var i =0; i<4; i++){
-    socketsList = io.sockets.connected[players[i].id];
+  for (var i = 0; i < 4; i++) {
+    socketsList[i] = io.sockets.connected[players[i].id];
   }
 
-   //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
+  //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
 
-   var presa = 0;
-   var somma = 0;
-   var asso = 0;
-   var carte = [];
+  var presa = 0;
+  var somma = 0;
+  var asso = 0;
+  var carte = [];
 
-  socketsList[0].on("card", ({data}) => {
+  socketsList[0].on("card", (data) => {
     presa = 0;
     somma = 0;
     asso = 0;
@@ -209,7 +209,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
 
           carte.push(campo[i]);
           carte.push(data);
-          
+
           //svuoto l'array carte cos' da poterlo riuatilizzare
           carte.splice(0, carte.length);
           if (campo.length == 1) {
@@ -222,27 +222,130 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
         }
       }
 
+      //controllo le somme
+      //prima guardo quante somme ci sono, se sono più di una è necessario far scegliere al giocatore
+      if (presa == 0) {
+        var sommeTriple = false;
+        var contaSomme = 0;
+        var tipoSommaTripla = 0; // 1/2 se è con la donna o con il re
+
+        //verifico che non si ci sia una somma tripla possibile
+        //some tripple 2+3+4 = 9 o 2+3+5 = 10
+        if (data.valore == 9 || data.valore == 10) {
+          //varibili di controllo
+          var d = 0;
+          var t = 0;
+          var q = 0;
+          var c = 0;
+          for (var i = 0; i < campo.length; i++) {
+            if (campo[i].valore == 2) {
+              d = 1;
+            }
+            if (campo[i].valore == 3) {
+              t = 1;
+            }
+            if (campo[i].valore == 4) {
+              q = 1;
+            }
+            if (campo[i].valore == 5) {
+              c = 1;
+            }
+          }
+          if (d == 1 && t == 1) {
+            if (q == 1 && data.valore == 9) {
+              sommeTriple = true;
+              tipoSommaTripla = 1;
+            }
+
+            if (c == 1 && data.valore == 10) {
+              sommeTriple = true;
+              tipoSommaTripla = 2;
+            }
+          }
+        }
+
+        //conto le somme doppie possibili
+        for (var i = 0; i < campo.length; i++) {
+        for (var j = i + 1; j < campo.length; j++) {
+          if (campo[i].valore + campo[j].valore == data.valore) {
+            //ho trovato una somma
+            console.log("ho trovato una somma");
+            contaSomme++;
+          }
+        }
+      }
+
+      //non ci sono prese
+      if (contaSomme == 0 && !sommeTriple) {
+        campo.push(data);
+      }
+
+      //c'è solo una somma possibile ed è somma classica
+      if (contaSomme == 1 && !sommeTriple) {
+        ultimaPresa = 1;
+        for (var i = 0; i < campo.length; i++) {
+          for (var j = i + 1; j < campo.length; j++) {
+            if (campo[i].valore + campo[j].valore == data.valore) {
+              //ho trovato una somma
+              prese1.push(campo[i]);
+              prese1.push(campo[j]);
+              console.log(
+                "ho trovato una somma e aggiungo le due carte tra quelle da toglire"
+              );
+              carte.push(campo[i]);
+              carte.push(campo[j]);
+
+              prese1.push(data);
+              campo.splice(j, 1);
+              campo.splice(i, 1);
+            }
+          }
+        }
+      }
+
+      //c'è solo una somma tripla
+      if (contaSomme == 0 && sommeTriple) {
+        ultimaPresa = 1;
+        if (tipoSommaTripla == 1) {
+          for (var i = 0; i < campo.length; i++) {
+            if (
+              campo[i].valore == 2 ||
+              campo[i].valore == 3 ||
+              campo[i].valore == 4
+            ) {
+              prese1.push(campo[i]);
+              carte.push(campo[i]);
+              prese1.push(data);
+              campo.splice(i, 1);
+            }
+          }
+        } else {
+          for (var i = 0; i < campo.length; i++) {
+            if (
+              campo[i].valore == 2 ||
+              campo[i].valore == 3 ||
+              campo[i].valore == 5
+            ) {
+              prese1.push(campo[i]);
+              carte.push(campo[i]);
+              prese1.push(data);
+              campo.splice(i, 1);
+            }
+          }
+        }
+      }
+    
+
     //mando il campo e l'ultima carta giocata a tutti i players
     io.to(players[0].table).emit("tableCards", {
       campo: campo,
       lastPlayedCard: data,
     });
-
   });
 
-  socketsList[1].on("card", ({data}) => {
+  socketsList[1].on("card", ({ data }) => {});
 
-  });
+  socketsList[2].on("card", ({ data }) => {});
 
-  socketsList[2].on("card", ({data}) => {
-
-  });
-
-  socketsList[3].on("card", ({data}) => {
-
-  });
-
-
-
- 
+  socketsList[3].on("card", ({ data }) => {});
 };
