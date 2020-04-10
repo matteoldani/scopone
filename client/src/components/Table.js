@@ -1,32 +1,26 @@
 import React from "react";
 
-import io from "socket.io-client";
-
 import { Container } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
-let socket;
-
-const Table = () => {
-  const [hand, setHand] = useState([]);
-
-  const SERVER = "localhost:8080";
+const Table = ({ socket }) => {
+  const [player, setPlayer] = useState({ mano: [] });
+  //   const [hand, setHand] = useState([]);
+  //   const [isPlaying, setIsPlaying] = useState();
 
   useEffect(() => {
-    socket = io(SERVER);
-    console.log(socket);
-    socket.on("cardsDealing", ({ data }) => {
-      console.log(data, hand);
-      setHand(data);
-      console.log(data, hand);
+    socket.on("playerData", ({ player }) => {
+      console.log(player);
+
+      setPlayer(player);
     });
-  }, [SERVER, hand]);
+  }, [socket, player]);
 
   return (
     <Container fluid style={{ backgroundColor: "#28a745", height: "100vh" }}>
       <h1>Hello table</h1>
-      {hand.map((card) => (
-        <p>{card}</p>
+      {player.mano.map((card, i) => (
+        <p key={i}>{card.seme}</p>
       ))}
     </Container>
   );

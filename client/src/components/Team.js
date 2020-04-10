@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router-dom";
-import io from "socket.io-client";
 
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 
-let socket;
-
-const Team = ({ match, history }) => {
+const Team = ({ socket, match, history }) => {
   const { username, table } = match.params;
   const [players, setPlayers] = useState([]);
   const [playerOne, setPlayerOne] = useState("");
   const [teamSize, setTeamSize] = useState(0);
-  const SERVER = "localhost:8081";
 
   const cambiaTeam = () => {
     socket.emit("changeTeam", { username });
@@ -23,8 +19,6 @@ const Team = ({ match, history }) => {
   };
 
   useEffect(() => {
-    socket = io(SERVER);
-
     // join table
     socket.emit("joinTable", match.params);
 
@@ -49,7 +43,7 @@ const Team = ({ match, history }) => {
     });
 
     console.log(socket);
-  }, [SERVER, match, history]);
+  }, [match, history]);
 
   return (
     <Container>

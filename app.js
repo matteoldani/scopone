@@ -97,9 +97,6 @@ io.on("connection", (socket) => {
   socket.on("initGame", ({ username, table }) => {
     var players = getTablePlayer(table);
     if (players.length == 4) {
-      for (var i = 0; i < 4; i++) {
-        players[i].socket = io.sockets.connected[players[i].id];
-      }
       players = initGame(players, io);
       io.to(players[0].table).emit("gameIsStarting");
       giocaMano(players, 0, 0);
@@ -133,7 +130,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
   //ASSEGNO LA MANO AD OGNI PLAYER
 
   for (var j = 0; j < 40; j += 10) {
-    if(j == 0){
+    if (j == 0) {
       players[j].isPlaying = 1;
     }
     for (var i = 0; i < 10; i++) {
@@ -143,6 +140,4 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
     players[j / 10].mano = mani[j / 10];
     io.to(players[j / 10].id).emit("playerData", { player: players[j / 10] });
   }
-
-
 };

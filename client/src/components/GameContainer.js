@@ -9,14 +9,10 @@ import FineMano from "./FineMano";
 import FinePartita from "./FinePartita";
 
 let socket;
+const SERVER = "localhost:8081";
+socket = io(SERVER);
 
 const GameContainer = () => {
-  const SERVER = "localhost:8080";
-
-  useEffect(() => {
-    socket = io(SERVER);
-  }, [SERVER]);
-
   return (
     <Switch>
       <Route
