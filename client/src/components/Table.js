@@ -15,8 +15,8 @@ const Table = () => {
   useEffect(() => {
     socket = io(SERVER);
 
-    socket.on("cardsDealing", ({ myHand }) => {
-      setHand(myHand);
+    socket.on("cardsDealing", ({ data }) => {
+      setHand(data);
     });
   }, [SERVER, hand]);
 
@@ -24,7 +24,7 @@ const Table = () => {
     <Container fluid style={{ backgroundColor: "#28a745", height: "100vh" }}>
       <h1>Hello table</h1>
       {hand.map((card) => (
-        <p>{hand}</p>
+        <p>{card}</p>
       ))}
     </Container>
   );
