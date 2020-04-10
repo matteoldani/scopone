@@ -12,7 +12,7 @@ const Team = ({ match, history }) => {
   const [players, setPlayers] = useState([]);
   const [playerOne, setPlayerOne] = useState("");
   const [teamSize, setTeamSize] = useState(0);
-  const SERVER = "localhost:8080";
+  const SERVER = "localhost:8081";
 
   const cambiaTeam = () => {
     socket.emit("changeTeam", { username });

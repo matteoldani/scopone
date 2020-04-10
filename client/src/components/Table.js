@@ -14,9 +14,11 @@ const Table = () => {
 
   useEffect(() => {
     socket = io(SERVER);
-
+    console.log(socket);
     socket.on("cardsDealing", ({ data }) => {
+      console.log(data, hand);
       setHand(data);
+      console.log(data, hand);
     });
   }, [SERVER, hand]);
 
