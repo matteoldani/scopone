@@ -89,7 +89,7 @@ io.on("connection", (socket) => {
 
   //starts the game
   socket.on("initGame", ({ username, table }) => {
-    players = getCurrentPlayerByUsername(username);
+    players = getTablePlayer(table);
     for (var i = 0; i < 4; i++) {
       players[i].socket = io.sockets.connected(players[i].id);
     }
