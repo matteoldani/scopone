@@ -11,7 +11,13 @@ const {
   getTablePlayer,
 } = require("./utils/players");
 
-const { giocaMano, initGame } = require("./utils/gameLoop");
+const {
+  estrazioneCasuale,
+  initGame,
+  makeDeck,
+  ordinaMano,
+  avanzaPosti,
+} = require("./utils/gameLoopFunctions");
 
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
@@ -21,7 +27,7 @@ app.get("/", function (req, res) {
 
 //se la query è con client viene mandata la risorsa
 app.use("../client", express.static(__dirname + "/client"));
-server.listen(8080, () => console.log("server started"));
+server.listen(8081, () => console.log("server started"));
 
 //inizializzo sockert.io che andrà inserito anche dentro l'index.html
 var io = require("socket.io")(server, {});
@@ -45,7 +51,7 @@ io.on("connection", (socket) => {
       }
       if (!controllo) {
         const player = playerJoin(socket.id, username, table);
-        console.log(player);
+        console.log("IL PLAYER SI E' COLLEGATO \n", player.id);
         socket.join(player.table);
 
         io.to(player.table).emit("tablePlayers", {
@@ -89,41 +95,49 @@ io.on("connection", (socket) => {
 
   //starts the game
   socket.on("initGame", ({ username, table }) => {
-    players = getTablePlayer(table);
-    for (var i = 0; i < 4; i++) {
-      players[i].socket = io.sockets.connected[players[i].id];
-    }
+    var players = getTablePlayer(table);
     if (players.length == 4) {
-      var sockets = initGame(players);
-      io.to(sockets[0].table).emit("gameIsStarting");
-      giocaMano(sockets, 0, 0);
+      for (var i = 0; i < 4; i++) {
+        players[i].socket = io.sockets.connected[players[i].id];
+      }
+      players = initGame(players, io);
+      io.to(players[0].table).emit("gameIsStarting");
+      giocaMano(players, 0, 0);
     }
   });
 });
 
-/*
-cose da lascoate in sospeso:
+var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
+  var mazzo = makeDeck();
+  //mischio il mazzo
+  var numeri = estrazioneCasuale();
 
+  //lista con tutti le mani
+  var mani = [];
 
+  var mano = [];
 
-pensare se è il caso di fare delle animazioni
-da aggiungere poi quale è l'ultima presa fatta
+  var prese1 = [];
+  var prese2 = [];
 
- sistamare il messaggio su chi sta giocando (visualizzare il nome al posto di "non è il tuo turno apsetta")
+  var scope1 = [];
+  var scope2 = [];
 
+  var campo = [];
 
+  //se 1 è la prma squadra se 2 la seconda...per decidere a chi dare le carte in campo
+  var ultimaPresa = 0;
 
-*/
+  var contatoreTurno = 1;
 
-////////CODICE DI ESEMPIO///////////
-/*
-//ricevo il messaggio inviato dalla pagina html
-socket.on('happy', function(data){ //il parametro della funzione sono i dati che passo da html, prima che non passavo nulla c'era socket
-  console.log('happy has been recived' + data.reason);
-});
+  //ASSEGNO LA MANO AD OGNI PLAYER
 
-//posso inviare un messaggio
-socket.emit('serverMsg', {
-  msg: 'hello',
-});
-*/
+  for (var j = 0; j < 40; j += 10) {
+    for (var i = 0; i < 10; i++) {
+      mano[i] = mazzo[numeri[i + j] - 1];
+    }
+    mani[j / 10] = ordinaMano(mano);
+    players[j / 10].mano = mani[j / 10];
+    io.to(players[j / 10].id).emit("cardsDealing", { data: mani[j / 10] });
+  }
+};

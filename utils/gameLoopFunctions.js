@@ -85,12 +85,13 @@ var avanzaPosti = function (players) {
   return players;
 };
 
-var initGame = function (platers) {
+var initGame = function (players) {
   var random = Math.floor(Math.random() * 4);
   var sockets = [];
   //ordino in base a un inizio casuale
   for (var i = 0; i < 4; i++) {
     sockets[i] = players[random % 4];
+    random++;
   }
   //sistemo in modo che i posti siano t1-t2-t1-t2
   if (sockets[0].team == 0) {
@@ -120,67 +121,10 @@ var initGame = function (platers) {
   return sockets;
 };
 
-var mazzo = makeDeck();
-
-var giocaMano = function (sockets, puntiPrimoTeam, puntiSecondoTeam) {
-  //mischio il mazzo
-  var numeri = estrazioneCasuale();
-
-  //lista con tutti le mani
-  var mani = [];
-
-  var mano1 = [];
-  var mano2 = [];
-  var mano3 = [];
-  var mano4 = [];
-
-  var prese1 = [];
-  var prese2 = [];
-
-  var scope1 = [];
-  var scope2 = [];
-
-  var campo = [];
-
-  //se 1 è la prma squadra se 2 la seconda...per decidere a chi dare le carte in campo
-  var ultimaPresa = 0;
-
-  var contatoreTurno = 1;
-
-  //ASSEGNO LA MANO AD OGNI PLAYER
-
-  for (var i = 0; i < 10; i++) {
-    mano1[i] = mazzo[numeri[i] - 1];
-  }
-  mani[0] = ordinaMano(mano1);
-  sockets[0].mano = mani[0];
-  sockets[0].socket.emit("cardsDealing", { data: mani[0] });
-
-  for (var i = 10; i < 20; i++) {
-    mano2[i - 10] = mazzo[numeri[i] - 1];
-  }
-  mani[1] = ordinaMano(mano2);
-  sockets[1].mano = mani[1];
-  sockets[1].socket.emit("cardsDealing", { data: mani[1] });
-
-  for (var i = 20; i < 30; i++) {
-    mano3[i - 20] = mazzo[numeri[i] - 1];
-  }
-  mani[2] = ordinaMano(mano3);
-  sockets[2].mano = mani[2];
-  sockets[2].socket.emit("cardsDealing", { data: mani[2] });
-
-  for (var i = 30; i < 40; i++) {
-    mano4[i - 30] = mazzo[numeri[i] - 1];
-  }
-  mani[3] = ordinaMano(mano4);
-  sockets[3].mano = mani[3];
-  sockets[3].socket.emit("cardsDealing", { data: mani[3] });
-
-  // FINISCO DI ASSEGNARE LA MANO AD OGNI PLAYER E INVIARLE AL CLIENT
-};
-
 module.exports = {
-  giocaMano,
+  estrazioneCasuale,
   initGame,
+  makeDeck,
+  ordinaMano,
+  avanzaPosti,
 };
