@@ -20,7 +20,11 @@ const GameContainer = () => {
         exact
         component={() => <Team socket={socket} />}
       />
-      <Route path="/table" exact component={() => <Table socket={socket} />} />
+      <Route
+        path="/table/:table/:username"
+        exact
+        component={() => <Table socket={socket} />}
+      />
       <Route
         path="/finemano"
         exact

@@ -266,76 +266,76 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
 
         //conto le somme doppie possibili
         for (var i = 0; i < campo.length; i++) {
-        for (var j = i + 1; j < campo.length; j++) {
-          if (campo[i].valore + campo[j].valore == data.valore) {
-            //ho trovato una somma
-            console.log("ho trovato una somma");
-            contaSomme++;
-          }
-        }
-      }
-
-      //non ci sono prese
-      if (contaSomme == 0 && !sommeTriple) {
-        campo.push(data);
-      }
-
-      //c'è solo una somma possibile ed è somma classica
-      if (contaSomme == 1 && !sommeTriple) {
-        ultimaPresa = 1;
-        for (var i = 0; i < campo.length; i++) {
           for (var j = i + 1; j < campo.length; j++) {
             if (campo[i].valore + campo[j].valore == data.valore) {
               //ho trovato una somma
-              prese1.push(campo[i]);
-              prese1.push(campo[j]);
-              console.log(
-                "ho trovato una somma e aggiungo le due carte tra quelle da toglire"
-              );
-              carte.push(campo[i]);
-              carte.push(campo[j]);
+              console.log("ho trovato una somma");
+              contaSomme++;
+            }
+          }
+        }
 
-              prese1.push(data);
-              campo.splice(j, 1);
-              campo.splice(i, 1);
+        //non ci sono prese
+        if (contaSomme == 0 && !sommeTriple) {
+          campo.push(data);
+        }
+
+        //c'è solo una somma possibile ed è somma classica
+        if (contaSomme == 1 && !sommeTriple) {
+          ultimaPresa = 1;
+          for (var i = 0; i < campo.length; i++) {
+            for (var j = i + 1; j < campo.length; j++) {
+              if (campo[i].valore + campo[j].valore == data.valore) {
+                //ho trovato una somma
+                prese1.push(campo[i]);
+                prese1.push(campo[j]);
+                console.log(
+                  "ho trovato una somma e aggiungo le due carte tra quelle da toglire"
+                );
+                carte.push(campo[i]);
+                carte.push(campo[j]);
+
+                prese1.push(data);
+                campo.splice(j, 1);
+                campo.splice(i, 1);
+              }
+            }
+          }
+        }
+
+        //c'è solo una somma tripla
+        if (contaSomme == 0 && sommeTriple) {
+          ultimaPresa = 1;
+          if (tipoSommaTripla == 1) {
+            for (var i = 0; i < campo.length; i++) {
+              if (
+                campo[i].valore == 2 ||
+                campo[i].valore == 3 ||
+                campo[i].valore == 4
+              ) {
+                prese1.push(campo[i]);
+                carte.push(campo[i]);
+                prese1.push(data);
+                campo.splice(i, 1);
+              }
+            }
+          } else {
+            for (var i = 0; i < campo.length; i++) {
+              if (
+                campo[i].valore == 2 ||
+                campo[i].valore == 3 ||
+                campo[i].valore == 5
+              ) {
+                prese1.push(campo[i]);
+                carte.push(campo[i]);
+                prese1.push(data);
+                campo.splice(i, 1);
+              }
             }
           }
         }
       }
-
-      //c'è solo una somma tripla
-      if (contaSomme == 0 && sommeTriple) {
-        ultimaPresa = 1;
-        if (tipoSommaTripla == 1) {
-          for (var i = 0; i < campo.length; i++) {
-            if (
-              campo[i].valore == 2 ||
-              campo[i].valore == 3 ||
-              campo[i].valore == 4
-            ) {
-              prese1.push(campo[i]);
-              carte.push(campo[i]);
-              prese1.push(data);
-              campo.splice(i, 1);
-            }
-          }
-        } else {
-          for (var i = 0; i < campo.length; i++) {
-            if (
-              campo[i].valore == 2 ||
-              campo[i].valore == 3 ||
-              campo[i].valore == 5
-            ) {
-              prese1.push(campo[i]);
-              carte.push(campo[i]);
-              prese1.push(data);
-              campo.splice(i, 1);
-            }
-          }
-        }
-      }
-    
-
+    }
     //mando il campo e l'ultima carta giocata a tutti i players
     io.to(players[0].table).emit("tableCards", {
       campo: campo,
