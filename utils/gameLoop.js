@@ -91,7 +91,6 @@ var initGame = function (platers) {
   //ordino in base a un inizio casuale
   for (var i = 0; i < 4; i++) {
     sockets[i] = players[random % 4];
-    players[random % 4].socket = io.sockets.connected[players[0].id6];
   }
   //sistemo in modo che i posti siano t1-t2-t1-t2
   if (sockets[0].team == 0) {
@@ -118,8 +117,7 @@ var initGame = function (platers) {
     }
   }
   //sistemati
-  io.to(sockets[0].table).emit("gameIsStarting");
-  giocaMano(sockets, 0, 0);
+  return sockets;
 };
 
 var mazzo = makeDeck();

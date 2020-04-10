@@ -91,10 +91,12 @@ io.on("connection", (socket) => {
   socket.on("initGame", ({ username, table }) => {
     players = getTablePlayer(table);
     for (var i = 0; i < 4; i++) {
-      players[i].socket = io.sockets.connected(players[i].id);
+      players[i].socket = io.sockets.connected[players[i].id];
     }
     if (players.length == 4) {
-      initGame(players);
+      var sockets = initGame(players);
+      io.to(sockets[0].table).emit("gameIsStarting");
+      giocaMano(sockets, 0, 0);
     }
   });
 });
