@@ -105,7 +105,7 @@ io.on("connection", (socket) => {
 });
 
 var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
-  var socketsList;
+  var socketsList = [];
   var mazzo = makeDeck();
   //mischio il mazzo
   var numeri = estrazioneCasuale();
@@ -142,18 +142,18 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
     io.to(players[j / 10].id).emit("playerData", { player: players[j / 10] });
   }
   //salvo la lista dei socket dei giocatori
-  for(var i =0; i<4; i++){
-    socketsList = io.sockets.connected[players[i].id];
+  for (var i = 0; i < 4; i++) {
+    socketsList[i] = io.sockets.connected[players[i].id];
   }
 
-   //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
+  //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
 
-   var presa = 0;
-   var somma = 0;
-   var asso = 0;
-   var carte = [];
+  var presa = 0;
+  var somma = 0;
+  var asso = 0;
+  var carte = [];
 
-  socketsList[0].on("card", ({data}) => {
+  socketsList[0].on("card", (data) => {
     presa = 0;
     somma = 0;
     asso = 0;
@@ -209,7 +209,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
 
           carte.push(campo[i]);
           carte.push(data);
-          
+
           //svuoto l'array carte cos' da poterlo riuatilizzare
           carte.splice(0, carte.length);
           if (campo.length == 1) {
@@ -221,28 +221,20 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
           console.log("ho eliminato la carta del campo: \n", campo);
         }
       }
+    }
+    campo.push(data);
+    console.log(campo);
 
     //mando il campo e l'ultima carta giocata a tutti i players
     io.to(players[0].table).emit("tableCards", {
       campo: campo,
       lastPlayedCard: data,
     });
-
   });
 
-  socketsList[1].on("card", ({data}) => {
+  socketsList[1].on("card", ({ data }) => {});
 
-  });
+  socketsList[2].on("card", ({ data }) => {});
 
-  socketsList[2].on("card", ({data}) => {
-
-  });
-
-  socketsList[3].on("card", ({data}) => {
-
-  });
-
-
-
- 
+  socketsList[3].on("card", ({ data }) => {});
 };

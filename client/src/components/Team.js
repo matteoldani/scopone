@@ -39,7 +39,7 @@ const Team = ({ socket, match, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push("/table");
+      history.push("/table/" + table + "/" + username);
     });
 
     console.log(socket);
