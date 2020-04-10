@@ -153,7 +153,8 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
   var asso = 0;
   var carte = [];
 
-  socketsList[0].on("card", (data) => {
+  io.on("card", (data) => {
+    var index;
     presa = 0;
     somma = 0;
     asso = 0;
@@ -161,23 +162,33 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
 
     console.log("Carta giocata: ", data);
 
+    for (var j = 0; j < 4; j++) {
+      if (players[j].id == data.id) {
+        index = j;
+        break;
+      }
+    }
+
     //metto in pausa il giocatore
-    players[0].isPlaying = 0;
-    io.to(players[0].table).emit("tablePlayers", {
-      table: players[0].table,
-      players: getTablePlayer(players[0].table),
+    players[index].isPlaying = 0;
+    io.to(players[index].table).emit("tablePlayers", {
+      table: players[index].table,
+      players: getTablePlayer(players[index].table),
     });
 
     console.log("Rimuovo la caera giocata dalla mano del giocatore");
-    for (var i = 0; i < mani[0].length; i++) {
-      if (mani[0][i].valore == data.valore && mani[0][i].seme == data.seme) {
+    for (var i = 0; i < mani[index].length; i++) {
+      if (
+        mani[index][i].valore == data.valore &&
+        mani[index][i].seme == data.seme
+      ) {
         console.log("dentro il primo if");
-        mani[0].splice(i, 1); //elimino la carta giocata
+        mani[index].splice(i, 1); //elimino la carta giocata
         console.log(
           "la carta giocata era la numero: ",
           data,
           "la nuova mano è: ",
-          mani[0]
+          mani[index]
         );
       }
     }
@@ -202,8 +213,14 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
       for (var i = 0; i < campo.length; i++) {
         if (campo[i].valore == data.valore) {
           console.log("ho trovato una carta uguale, la prendo");
-          prese1.push(campo[i]);
-          prese1.push(data);
+          if (index == 0 || index == 2) {
+            prese1.push(campo[i]);
+            prese1.push(data);
+          } else {
+            prese2.push(campo[i]);
+            prese2.push(data);
+          }
+
           ultimaPresa = 1;
           presa = 1;
 
@@ -213,7 +230,12 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
           //svuoto l'array carte cos' da poterlo riuatilizzare
           carte.splice(0, carte.length);
           if (campo.length == 1) {
-            scope1.push(data);
+            if (index == 0 || index == 2) {
+              scope1.push(data);
+            } else {
+              scope2.push(data);
+            }
+
             console.log("ho anche fatto scopa");
           }
           console.log("questo è il campo prima dello splice: \n", campo);
@@ -287,15 +309,22 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
             for (var j = i + 1; j < campo.length; j++) {
               if (campo[i].valore + campo[j].valore == data.valore) {
                 //ho trovato una somma
-                prese1.push(campo[i]);
-                prese1.push(campo[j]);
+                if (index == 0 || index == 2) {
+                  prese1.push(campo[i]);
+                  prese1.push(campo[j]);
+                  prese1.push(data);
+                } else {
+                  prese2.push(campo[i]);
+                  prese2.push(campo[j]);
+                  prese2.push(data);
+                }
+
                 console.log(
                   "ho trovato una somma e aggiungo le due carte tra quelle da toglire"
                 );
                 carte.push(campo[i]);
                 carte.push(campo[j]);
 
-                prese1.push(data);
                 campo.splice(j, 1);
                 campo.splice(i, 1);
               }
@@ -313,9 +342,15 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
                 campo[i].valore == 3 ||
                 campo[i].valore == 4
               ) {
-                prese1.push(campo[i]);
+                if (index == 0 || index == 2) {
+                  prese1.push(campo[i]);
+                  prese1.push(data);
+                } else {
+                  prese2.push(campo[i]);
+                  prese2.push(data);
+                }
+
                 carte.push(campo[i]);
-                prese1.push(data);
                 campo.splice(i, 1);
               }
             }
@@ -326,26 +361,73 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
                 campo[i].valore == 3 ||
                 campo[i].valore == 5
               ) {
-                prese1.push(campo[i]);
+                if (index == 0 || index == 2) {
+                  prese1.push(campo[i]);
+                  prese1.push(data);
+                } else {
+                  prese2.push(campo[i]);
+                  prese2.push(data);
+                }
+
                 carte.push(campo[i]);
-                prese1.push(data);
                 campo.splice(i, 1);
               }
             }
           }
         }
+        //ho più possibilità, faccio scegliere dal client
+        //mando un messaggio generico
+        if (contaSomme > 1) {
+          socketsList[index].emit("sommeMultiple", campo);
+          ultimaPresa = 1;
+          console.log("ho troavto più somme possibili");
+          //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
+          if (index == 0 || index == 2) {
+            prese1.push(data);
+          } else {
+            prese2.push(data);
+          }
+        } else {
+          if (contatoreTurno != 10) {
+            if (index == 3) {
+              contatoreTurno++;
+            }
+            socketsList[(index + 1) % 4].isPlaying = 1;
+            io.to(players[0].table).emit("tableCards", {
+              campo: campo,
+              lastPlayedCard: data,
+            });
+          } else {
+            endGame(prese1, prese2, socketsList);
+          }
+        }
+      } else {
+        if (contatoreTurno != 10) {
+          if (index == 3) {
+            contatoreTurno++;
+          }
+          socketsList[(index + 1) % 4].isPlaying = 1;
+          io.to(players[0].table).emit("tableCards", {
+            campo: campo,
+            lastPlayedCard: data,
+          });
+        } else {
+          endGame(prese1, prese2, socketsList);
+        }
+      }
+    } else {
+      if (contatoreTurno != 10) {
+        if (index == 3) {
+          contatoreTurno++;
+        }
+        socketsList[(index + 1) % 4].isPlaying = 1;
+        io.to(players[0].table).emit("tableCards", {
+          campo: campo,
+          lastPlayedCard: data,
+        });
+      } else {
+        endGame(prese1, prese2, socketsList);
       }
     }
-    //mando il campo e l'ultima carta giocata a tutti i players
-    io.to(players[0].table).emit("tableCards", {
-      campo: campo,
-      lastPlayedCard: data,
-    });
   });
-
-  socketsList[1].on("card", ({ data }) => {});
-
-  socketsList[2].on("card", ({ data }) => {});
-
-  socketsList[3].on("card", ({ data }) => {});
 };
