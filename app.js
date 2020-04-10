@@ -133,11 +133,16 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
   //ASSEGNO LA MANO AD OGNI PLAYER
 
   for (var j = 0; j < 40; j += 10) {
+    if(j == 0){
+      players[j].isPlaying = 1;
+    }
     for (var i = 0; i < 10; i++) {
       mano[i] = mazzo[numeri[i + j] - 1];
     }
     mani[j / 10] = ordinaMano(mano);
     players[j / 10].mano = mani[j / 10];
-    io.to(players[j / 10].id).emit("cardsDealing", { data: mani[j / 10] });
+    io.to(players[j / 10].id).emit("playerData", { player: players[j / 10] });
   }
+
+
 };
