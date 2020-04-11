@@ -141,6 +141,10 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
     //players[j / 10].mano = mani[j / 10];
     io.to(players[j / 10].id).emit("playerCards", { cards: mani[j / 10] });
   }
+  io.to(players[0].table).emit("tablePlayers", {
+    table: players[0].table,
+    players: getTablePlayer(players[0].table),
+  });
   //salvo la lista dei socket dei giocatori
   for (var i = 0; i < 4; i++) {
     socketsList[i] = io.sockets.connected[players[i].id];
