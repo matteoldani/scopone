@@ -61,6 +61,7 @@ const Table = ({ socket, match }) => {
           break;
         }
       }
+      setClicked(0);
     });
   }, [socket, players, username]);
 

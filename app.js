@@ -26,7 +26,6 @@ var numeri = estrazioneCasuale();
 
 //lista con tutti le mani
 var mani = [];
-
 var mano = [];
 
 var prese1 = [];
@@ -225,7 +224,7 @@ var onCard = function (scoekt, id, data) {
           prese2.push(campo[i]);
           prese2.push(data);
         }
-
+        campo.splice(i, 1);
         ultimaPresa = 1;
         presa = 1;
 
@@ -248,6 +247,7 @@ var onCard = function (scoekt, id, data) {
           campo.splice(i, 1);
           console.log("ho eliminato la carta del campo: \n", campo);
           */
+        break;
       }
     }
 
