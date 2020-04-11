@@ -90,12 +90,13 @@ const Table = ({ socket, match }) => {
       <Container>
         {cards.map((card, i) => (
           <Button
+            className="mr-2"
             key={i}
             variant="outline-light"
             onClick={() => handleCardClick(card)}
             disabled={!player.isPlaying || clicked}
           >
-            {card.seme}-{card.valore}
+            <PlayingCard seme={card.seme} valore={card.valore} />
           </Button>
         ))}
       </Container>
