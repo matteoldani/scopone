@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 
 import { LinkContainer } from "react-router-bootstrap";
-import { useState } from "react";
+
+import { GameContext } from "./GameContext";
 
 const Join = () => {
-  const [name, setName] = useState("");
-  const [table, setTable] = useState("");
+  const { table, setTable, username, setUsername } = useContext(GameContext);
 
   return (
     <Container>
@@ -37,8 +37,8 @@ const Join = () => {
           <Form.Control
             type="text"
             placeholder="Nickname"
-            onChange={e => {
-              setName(e.target.value);
+            onChange={(e) => {
+              setUsername(e.target.value);
             }}
           />
         </Form.Group>
@@ -48,14 +48,14 @@ const Join = () => {
           <Form.Control
             type="text"
             placeholder="Codice Tavolo"
-            onChange={e => {
+            onChange={(e) => {
               setTable(e.target.value);
             }}
           />
         </Form.Group>
         <LinkContainer
-          onClick={e => (!name || !table ? e.preventDefault() : null)}
-          to={"/team/" + table + "/" + name}
+          onClick={(e) => (!username || !table ? e.preventDefault() : null)}
+          to={"/team"}
         >
           <Button variant="success" type="submit">
             Gioca

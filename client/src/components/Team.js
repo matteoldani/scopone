@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
+import { GameContext } from "./GameContext";
 
-import { Container, Row, Col, Button } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
-
-const Team = ({ socket, match, history }) => {
-  const { username, table } = match.params;
+const Team = ({ socket, history }) => {
+  //   const { username, table } = match.params;
+  //   const [username, setUsername] = useContext(GameContext);
+  //   const [table, setTable] = useContext(GameContext);
+  const { table, setTable, username, setUsername } = useContext(GameContext);
   const [players, setPlayers] = useState([]);
   const [playerOne, setPlayerOne] = useState("");
   const [teamSize, setTeamSize] = useState(0);
@@ -20,7 +22,7 @@ const Team = ({ socket, match, history }) => {
 
   useEffect(() => {
     // join table
-    socket.emit("joinTable", match.params);
+    socket.emit("joinTable", { username, table });
 
     socket.on("connectionError", ({ error }) => {
       alert(error);
@@ -39,13 +41,11 @@ const Team = ({ socket, match, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push(
-        "/table/" + match.params.table + "/" + match.params.username
-      );
+      history.push("/table");
     });
 
     console.log(socket);
-  }, [socket, match, history]);
+  }, [socket, history, username, table]);
 
   return (
     <Container>

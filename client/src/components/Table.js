@@ -1,13 +1,11 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Container } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
-
-import { Container, Button } from "react-bootstrap";
-import { useState, useEffect } from "react";
-
+import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
 
 const Table = ({ socket, match }) => {
-  const { username, table } = match.params;
+  const { username, setUsername, table, setTable } = useContext(GameContext);
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
   const [players, setPlayers] = useState([]);
   const [cards, setCards] = useState([
@@ -68,36 +66,60 @@ const Table = ({ socket, match }) => {
   }, [socket, players, username]);
 
   return (
-    <Container fluid style={{ backgroundColor: "#28a745", height: "100vh" }}>
+    <Container fluid style={{ backgroundColor: "#28a745", minHeight: "100vh" }}>
       <h1 className="text-white">{table}</h1>
+      <strong>Giocatori:</strong>{" "}
+      {players.map((p) => (
+        <span
+          style={{ color: p.isPlaying === 1 ? "white" : null, marginLeft: 10 }}
+        >
+          {p.username},
+        </span>
+      ))}
+      <br />
+      <strong>Ultima carta giocata: </strong>
+      <span>
+        {lastPlayed.seme} {lastPlayed.valore}
+      </span>
       {player.isPlaying ? (
         <h4 className="text-white text-center">Tocca a te giocare!</h4>
       ) : null}
       <hr />
-      <Container>
+      <h4>Campo</h4>
+      <Container fluid style={{ minHeight: 100 }}>
         {campo.map((card, i) => (
-          <Button
-            key={i}
-            variant="outline-light"
+          //   <Button
+          //     key={i}
+          //     variant="outline-light"
+          //     onClick={() => handleCardClick(card)}
+          //     disabled={!somme}
+          //   >
+          <PlayingCard
+            seme={card.seme}
+            valore={card.valore}
             onClick={() => handleCardClick(card)}
             disabled={!somme}
-          >
-            <PlayingCard seme={card.seme} valore={card.valore} />
-          </Button>
+          />
         ))}
       </Container>
       <hr />
-      <Container>
+      <h4>Mano</h4>
+      <Container fluid>
         {cards.map((card, i) => (
-          <Button
-            className="mr-2"
-            key={i}
-            variant="outline-light"
+          //   <Button
+          //     className="mr-2"
+          //     key={i}
+          //     variant="outline-light"
+          //     onClick={() => handleCardClick(card)}
+          //     disabled={!player.isPlaying || clicked}
+          //   >
+          //   </Button>
+          <PlayingCard
+            seme={card.seme}
+            valore={card.valore}
             onClick={() => handleCardClick(card)}
             disabled={!player.isPlaying || clicked}
-          >
-            <PlayingCard seme={card.seme} valore={card.valore} />
-          </Button>
+          />
         ))}
       </Container>
     </Container>

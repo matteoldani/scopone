@@ -3,14 +3,18 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import { GameProvider } from "./components/GameContext";
+
 import Join from "./components/Join";
 import GameContainer from "./components/GameContainer";
 
 const App = () => {
   return (
     <Router>
-      <Route path="/" exact component={Join} />
-      <GameContainer />
+      <GameProvider>
+        <Route path="/" exact component={Join} />
+        <GameContainer />
+      </GameProvider>
     </Router>
   );
 };
