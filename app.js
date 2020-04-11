@@ -138,8 +138,8 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
       mano[i] = mazzo[numeri[i + j] - 1];
     }
     mani[j / 10] = ordinaMano(mano);
-    players[j / 10].mano = mani[j / 10];
-    io.to(players[j / 10].id).emit("playerData", { player: players[j / 10] });
+    //players[j / 10].mano = mani[j / 10];
+    io.to(players[j / 10].id).emit("playerCards", { cards: mani[j / 10] });
   }
   //salvo la lista dei socket dei giocatori
   for (var i = 0; i < 4; i++) {
@@ -153,7 +153,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
   var asso = 0;
   var carte = [];
 
-  io.on("card", (data) => {
+  io.on("card", ({ data, id }) => {
     var index;
     presa = 0;
     somma = 0;
@@ -163,18 +163,11 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
     console.log("Carta giocata: ", data);
 
     for (var j = 0; j < 4; j++) {
-      if (players[j].id == data.id) {
+      if (players[j].id == id) {
         index = j;
         break;
       }
     }
-
-    //metto in pausa il giocatore
-    players[index].isPlaying = 0;
-    io.to(players[index].table).emit("tablePlayers", {
-      table: players[index].table,
-      players: getTablePlayer(players[index].table),
-    });
 
     console.log("Rimuovo la caera giocata dalla mano del giocatore");
     for (var i = 0; i < mani[index].length; i++) {
@@ -192,13 +185,19 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
         );
       }
     }
+    io.to(players[index].id).emit("playerCards", { cards: mani[index] });
 
     if (data.valore == 1) {
       //se trovo l'asso aggiugo il campo alla presa e lo svuto
       console.log("e' stato giocato un asso");
       prese1.push(data);
       for (var i = 0; i < campo.length; i++) {
-        prese1.push(campo[i]);
+        if (index == 0 || index == 2) {
+          prese1.push(campo[i]);
+        } else {
+          prese2.push(campo[i]);
+        }
+
         console.log("aggiungo carte anche tra quelle da toglire dal campo");
         carte.push(campo[i]);
         ultimaPresa = 1;
@@ -238,9 +237,11 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
 
             console.log("ho anche fatto scopa");
           }
+          /*
           console.log("questo è il campo prima dello splice: \n", campo);
           campo.splice(i, 1);
           console.log("ho eliminato la carta del campo: \n", campo);
+          */
         }
       }
 
@@ -392,7 +393,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
             if (index == 3) {
               contatoreTurno++;
             }
-            socketsList[(index + 1) % 4].isPlaying = 1;
+            players[(index + 1) % 4].isPlaying = 1;
             io.to(players[0].table).emit("tableCards", {
               campo: campo,
               lastPlayedCard: data,
@@ -406,7 +407,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
           if (index == 3) {
             contatoreTurno++;
           }
-          socketsList[(index + 1) % 4].isPlaying = 1;
+          players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
             campo: campo,
             lastPlayedCard: data,
@@ -420,7 +421,7 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
         if (index == 3) {
           contatoreTurno++;
         }
-        socketsList[(index + 1) % 4].isPlaying = 1;
+
         io.to(players[0].table).emit("tableCards", {
           campo: campo,
           lastPlayedCard: data,
@@ -429,5 +430,17 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
         endGame(prese1, prese2, socketsList);
       }
     }
+
+    players[index].isPlaying = 0;
+    io.to(players[index].table).emit("tablePlayers", {
+      table: players[index].table,
+      players: getTablePlayer(players[index].table),
+    });
   });
 };
+
+/*
+message tablePlayer sends the object 'player' to evreyone
+message tableCards semds the object 'campo' and the last played card to evreone
+message playerCards sends the hand of a specific player only to his clinet
+*/
