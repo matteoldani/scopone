@@ -4,21 +4,23 @@ import { withRouter } from "react-router-dom";
 import { Container, Button } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
+import PlayingCard from "./PlayingCard";
+
 const Table = ({ socket, match }) => {
   const { username, table } = match.params;
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
   const [players, setPlayers] = useState([]);
   const [cards, setCards] = useState([
-    // { seme: "D", valore: 1 },
-    // { seme: "S", valore: 2 },
-    // { seme: "C", valore: 2 },
-    // { seme: "C", valore: 3 },
-    // { seme: "S", valore: 4 },
-    // { seme: "S", valore: 5 },
-    // { seme: "C", valore: 6 },
-    // { seme: "C", valore: 9 },
-    // { seme: "S", valore: 9 },
-    // { seme: "H", valore: 10 },
+    { seme: "D", valore: 1 },
+    { seme: "S", valore: 2 },
+    { seme: "C", valore: 2 },
+    { seme: "C", valore: 3 },
+    { seme: "S", valore: 4 },
+    { seme: "S", valore: 5 },
+    { seme: "C", valore: 6 },
+    { seme: "C", valore: 9 },
+    { seme: "S", valore: 9 },
+    { seme: "H", valore: 10 },
   ]);
   const [campo, setCampo] = useState([]);
   const [lastPlayed, setLastPlayed] = useState({});
@@ -61,6 +63,7 @@ const Table = ({ socket, match }) => {
           break;
         }
       }
+      setClicked(0);
     });
   }, [socket, players, username]);
 
@@ -79,7 +82,7 @@ const Table = ({ socket, match }) => {
             onClick={() => handleCardClick(card)}
             disabled={!somme}
           >
-            {card.seme}-{card.valore}
+            <PlayingCard seme={card.seme} valore={card.valore} />
           </Button>
         ))}
       </Container>
