@@ -23,12 +23,34 @@ const Table = ({ socket, match }) => {
   const [campo, setCampo] = useState([]);
   const [lastPlayed, setLastPlayed] = useState({});
   const [somme, setSomme] = useState(0);
+  const [selectedCards, setSelectedCards] = useState([]);
   const [clicked, setClicked] = useState(0);
 
   const handleCardClick = (data) => {
     console.log(data);
     socket.emit("card", { id: player.id, data });
+    setLastPlayed(data);
     setClicked(1);
+  };
+
+  const handleSelectCard = (data) => {
+    let tot = 0;
+    for (let i = 0; i < selectedCards.length; ++i) {
+      tot += selectedCards[i].valore;
+    }
+    let newTot = data.valore + tot;
+    if (newTot === lastPlayed.valore) {
+      console.log("somma ok");
+      socket.emit("somma", [...selectedCards, data]);
+      setSelectedCards([]);
+      setSomme(0);
+    } else if (newTot < lastPlayed.valore) {
+      setSelectedCards([...selectedCards, data]);
+      console.log("somma non completa");
+    } else {
+      setSelectedCards([]);
+      console.log("somma sbagliata");
+    }
   };
 
   //   const findPlayer = (username) => {
@@ -45,10 +67,14 @@ const Table = ({ socket, match }) => {
       setCards(cards);
     });
 
-    socket.on("tableCards", ({ campo, lastPlayedCard }) => {
+    socket.on("tableCards", ({ campo }) => {
       setCampo(campo);
-      setLastPlayed(lastPlayedCard);
+      //   setLastPlayed(lastPlayedCard);
       //   console.log(campo);
+    });
+
+    socket.on("sommeMultiple", () => {
+      setSomme(1);
     });
   }, [socket, cards, campo, lastPlayed]);
 
@@ -79,7 +105,10 @@ const Table = ({ socket, match }) => {
       <br />
       <strong>Ultima carta giocata: </strong>
       <span>
-        {lastPlayed.seme} {lastPlayed.valore}
+        {lastPlayed.seme === "S" ? "&spades;" : null}
+        {lastPlayed.seme === "H" ? "&hearts;" : null}
+        {lastPlayed.seme === "D" ? "&diamonds;" : null}
+        {lastPlayed.seme === "C" ? "&clubs;" : null} {lastPlayed.valore}
       </span>
       {player.isPlaying ? (
         <h4 className="text-white text-center">Tocca a te giocare!</h4>
@@ -97,8 +126,11 @@ const Table = ({ socket, match }) => {
           <PlayingCard
             seme={card.seme}
             valore={card.valore}
-            onClick={() => handleCardClick(card)}
+            onClick={() => handleSelectCard(card)}
             disabled={!somme}
+            style={{
+              border: selectedCards.includes(card) ? "5px solid red" : null,
+            }}
           />
         ))}
       </Container>
