@@ -27,6 +27,8 @@ var numeri = estrazioneCasuale();
 //lista con tutti le mani
 var mani = [[], [], [], []];
 
+var carte = [];
+
 var prese1 = [];
 var prese2 = [];
 
@@ -134,8 +136,8 @@ io.on("connection", (socket) => {
     onCard(socket, id, data);
   });
 
-  socket.on("somma", (data) => {
-    somma(data);
+  socket.on("somma", ({ id, data }) => {
+    somma(data, id);
   });
 });
 
@@ -173,7 +175,7 @@ var onCard = function (scoekt, id, data) {
   var presa = 0;
   var somma = 0;
   var asso = 0;
-  var carte = [];
+
   carte.splice(0, carte.length);
 
   console.log("Carta giocata: ", data);
@@ -436,6 +438,7 @@ var onCard = function (scoekt, id, data) {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
             campo: campo,
+            lastPlayedCard: data,
           });
         } else {
           if (index == 3) {
@@ -444,6 +447,7 @@ var onCard = function (scoekt, id, data) {
             players[(index + 1) % 4].isPlaying = 1;
             io.to(players[0].table).emit("tableCards", {
               campo: campo,
+              lastPlayedCard: data,
             });
           }
         }
@@ -456,6 +460,7 @@ var onCard = function (scoekt, id, data) {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
           campo: campo,
+          lastPlayedCard: data,
         });
       } else {
         if (index == 3) {
@@ -464,6 +469,7 @@ var onCard = function (scoekt, id, data) {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
             campo: campo,
+            lastPlayedCard: data,
           });
         }
       }
@@ -476,6 +482,7 @@ var onCard = function (scoekt, id, data) {
       }
       players[(index + 1) % 4].isPlaying = 1;
       io.to(players[0].table).emit("tableCards", {
+        lastPlayedCard: data,
         campo: campo,
       });
     } else {
@@ -485,6 +492,7 @@ var onCard = function (scoekt, id, data) {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
           campo: campo,
+          lastPlayedCard: data,
         });
       }
     }
@@ -893,7 +901,7 @@ var endGame = function (prese1, prese2, socketsList, id) {
   }
 };
 
-var somma = function (data, id) {
+var somma = function (data, id, last) {
   for (var j in data.data) {
     for (var i = 0; i < campo.length; i++) {
       if (
@@ -917,6 +925,7 @@ var somma = function (data, id) {
   var player = getCurrentPlayerById(id);
   io.to(player.table).emit("tableCards", {
     campo: campo,
+    lastPlayedCard: last,
   });
   carte.splice(0, carte.length);
 
@@ -927,6 +936,7 @@ var somma = function (data, id) {
     players[(index + 1) % 4].isPlaying = 1;
     io.to(players[0].table).emit("tableCards", {
       campo: campo,
+      lastPlayedCard: last,
     });
   } else {
     if (index == 3) {
@@ -935,6 +945,7 @@ var somma = function (data, id) {
       players[(index + 1) % 4].isPlaying = 1;
       io.to(players[0].table).emit("tableCards", {
         campo: campo,
+        lastPlayedCard: last,
       });
     }
   }
@@ -946,6 +957,7 @@ var somma = function (data, id) {
     players[(index + 1) % 4].isPlaying = 1;
     io.to(players[0].table).emit("tableCards", {
       campo: campo,
+      lastPlayedCard: last,
     });
   } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
@@ -955,6 +967,7 @@ var somma = function (data, id) {
       players[(index + 1) % 4].isPlaying = 1;
       io.to(players[0].table).emit("tableCards", {
         campo: campo,
+        lastPlayedCard: last,
       });
     }
   }
