@@ -25,8 +25,7 @@ var mazzo = makeDeck();
 var numeri = estrazioneCasuale();
 
 //lista con tutti le mani
-var mani = [];
-var mano = [];
+var mani = [[], [], [], []];
 
 var prese1 = [];
 var prese2 = [];
@@ -139,12 +138,16 @@ var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
       players[j].isPlaying = 1;
     }
     for (var i = 0; i < 10; i++) {
-      mano[i] = mazzo[numeri[i + j] - 1];
+      mani[j / 10][i] = mazzo[numeri[i + j] - 1];
     }
-    mani[j / 10] = ordinaMano(mano);
+    mani[j / 10] = ordinaMano(mani[j / 10]);
+    console.log(j / 10);
+    // console.log("mano: \n", mano);
+    console.log(mani);
     //players[j / 10].mano = mani[j / 10];
     io.to(players[j / 10].id).emit("playerCards", { cards: mani[j / 10] });
   }
+  console.log(mani);
   io.to(players[0].table).emit("tablePlayers", {
     table: players[0].table,
     players: getTablePlayer(players[0].table),
@@ -170,12 +173,15 @@ var onCard = function (scoekt, id, data) {
   for (var j = 0; j < 4; j++) {
     if (players[j].id == id) {
       index = j;
+      console.log(index);
       break;
     }
   }
+  console.log(mani, data);
 
   console.log("Rimuovo la caera giocata dalla mano del giocatore");
   for (var i = 0; i < mani[index].length; i++) {
+    console.log("qui");
     if (
       mani[index][i].valore == data.valore &&
       mani[index][i].seme == data.seme
@@ -423,11 +429,12 @@ var onCard = function (scoekt, id, data) {
       }
     }
   } else {
+    console.log("ho giocato un asso e ora sono nel suo else");
     if (contatoreTurno != 10) {
       if (index == 3) {
         contatoreTurno++;
       }
-
+      players[(index + 1) % 4].isPlaying = 1;
       io.to(players[0].table).emit("tableCards", {
         campo: campo,
         lastPlayedCard: data,
@@ -436,7 +443,7 @@ var onCard = function (scoekt, id, data) {
       endGame(prese1, prese2, socketsList);
     }
   }
-
+  console.log("sono arrivato in fondo, cambio il giocatore che deve gicoare");
   players[index].isPlaying = 0;
   io.to(players[index].table).emit("tablePlayers", {
     table: players[index].table,
