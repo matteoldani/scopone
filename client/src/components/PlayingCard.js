@@ -4,11 +4,12 @@ import { Button } from "react-bootstrap";
 
 import { GiSpades, GiDiamonds, GiHearts, GiClubs } from "react-icons/gi";
 
-const PlayingCard = ({ seme, valore, onClick, disabled }) => {
+const PlayingCard = ({ seme, valore, onClick, disabled, style }) => {
   return (
     <Button
       variant="light"
       style={{
+        ...style,
         color: seme === "H" || seme === "D" ? "red" : null,
         height: 178,
         width: 114,

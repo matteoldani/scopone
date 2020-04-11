@@ -409,8 +409,8 @@ var onCard = function (scoekt, id, data) {
       }
       //ho più possibilità, faccio scegliere dal client
       //mando un messaggio generico
-      if (contaSomme > 1) {
-        socketsList[index].emit("sommeMultiple", campo);
+      if (contaSomme > 1 || (contaSomme == 1 && sommeTriple)) {
+        io.to(id).emit("sommeMultiple");
         if (index == 0 || index == 2) {
           ultimaPresa = 1;
         } else {
