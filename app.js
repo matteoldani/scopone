@@ -44,6 +44,8 @@ var players = [];
 var puntiPrimoTeam = 0;
 var puntiSecondoTeam = 0;
 
+var index;
+
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
 app.get("/", function (req, res) {
@@ -131,6 +133,10 @@ io.on("connection", (socket) => {
   socket.on("card", ({ id, data }) => {
     onCard(socket, id, data);
   });
+
+  socket.on("somma", (data) => {
+    somma(data);
+  });
 });
 
 var giocaMano = function (players) {
@@ -164,7 +170,6 @@ var giocaMano = function (players) {
 };
 
 var onCard = function (scoekt, id, data) {
-  var index;
   var presa = 0;
   var somma = 0;
   var asso = 0;
@@ -409,8 +414,8 @@ var onCard = function (scoekt, id, data) {
       }
       //ho più possibilità, faccio scegliere dal client
       //mando un messaggio generico
-      if (contaSomme > 1) {
-        socketsList[index].emit("sommeMultiple", campo);
+      if (contaSomme > 1 || (contaSomme == 1 && sommeTriple)) {
+        io.to(id).emit("sommeMultiple");
         if (index == 0 || index == 2) {
           ultimaPresa = 1;
         } else {
@@ -431,16 +436,14 @@ var onCard = function (scoekt, id, data) {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
             campo: campo,
-            lastPlayedCard: data,
           });
         } else {
           if (index == 3) {
-            endGame(prese1, prese2, socketsList);
+            endGame(prese1, prese2, socketsList, id);
           } else {
             players[(index + 1) % 4].isPlaying = 1;
             io.to(players[0].table).emit("tableCards", {
               campo: campo,
-              lastPlayedCard: data,
             });
           }
         }
@@ -453,16 +456,14 @@ var onCard = function (scoekt, id, data) {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
           campo: campo,
-          lastPlayedCard: data,
         });
       } else {
         if (index == 3) {
-          endGame(prese1, prese2, socketsList);
+          endGame(prese1, prese2, socketsList, id);
         } else {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
             campo: campo,
-            lastPlayedCard: data,
           });
         }
       }
@@ -476,16 +477,14 @@ var onCard = function (scoekt, id, data) {
       players[(index + 1) % 4].isPlaying = 1;
       io.to(players[0].table).emit("tableCards", {
         campo: campo,
-        lastPlayedCard: data,
       });
     } else {
       if (index == 3) {
-        endGame(prese1, prese2, socketsList);
+        endGame(prese1, prese2, socketsList, id);
       } else {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
           campo: campo,
-          lastPlayedCard: data,
         });
       }
     }
@@ -891,6 +890,73 @@ var endGame = function (prese1, prese2, socketsList, id) {
   } else {
     socketsList = avanzaPosti(socketsList);
     giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
+  }
+};
+
+var somma = function (data, id) {
+  for (var j in data.data) {
+    for (var i = 0; i < campo.length; i++) {
+      if (
+        campo[i].valore == data.data[j].valore &&
+        campo[i].seme == data.data[j].seme
+      ) {
+        if (index == 0 || index == 2) {
+          prese1.push(campo[i]);
+          carte.push(campo[i]);
+          campo.splice(i, 1);
+        } else {
+          prese2.push(campo[i]);
+          carte.push(campo[i]);
+          campo.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  //mando il campo da disegnare
+  var player = getCurrentPlayerById(id);
+  io.to(player.table).emit("tableCards", {
+    campo: campo,
+  });
+  carte.splice(0, carte.length);
+
+  if (contatoreTurno != 10) {
+    if (index == 3) {
+      contatoreTurno++;
+    }
+    players[(index + 1) % 4].isPlaying = 1;
+    io.to(players[0].table).emit("tableCards", {
+      campo: campo,
+    });
+  } else {
+    if (index == 3) {
+      endGame(prese1, prese2, socketsList, id);
+    } else {
+      players[(index + 1) % 4].isPlaying = 1;
+      io.to(players[0].table).emit("tableCards", {
+        campo: campo,
+      });
+    }
+  }
+
+  if (contatoreTurno != 10) {
+    if (index == 3) {
+      contatoreTurno++;
+    }
+    players[(index + 1) % 4].isPlaying = 1;
+    io.to(players[0].table).emit("tableCards", {
+      campo: campo,
+    });
+  } else {
+    //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
+    if (index == 3) {
+      endGame(prese1, prese2, socketsList, id);
+    } else {
+      players[(index + 1) % 4].isPlaying = 1;
+      io.to(players[0].table).emit("tableCards", {
+        campo: campo,
+      });
+    }
   }
 };
 
