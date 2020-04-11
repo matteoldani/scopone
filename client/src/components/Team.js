@@ -39,11 +39,13 @@ const Team = ({ socket, match, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push("/table/" + table + "/" + username);
+      history.push(
+        "/table/" + match.params.table + "/" + match.params.username
+      );
     });
 
     console.log(socket);
-  }, [match, history]);
+  }, [socket, match, history]);
 
   return (
     <Container>
