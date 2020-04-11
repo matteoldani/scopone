@@ -41,6 +41,9 @@ var ultimaPresa = 0;
 var contatoreTurno = 1;
 var players = [];
 
+var puntiPrimoTeam = 0;
+var puntiSecondoTeam = 0;
+
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
 app.get("/", function (req, res) {
@@ -121,7 +124,7 @@ io.on("connection", (socket) => {
     if (players.length == 4) {
       players = initGame(players, io);
       io.to(players[0].table).emit("gameIsStarting");
-      giocaMano(players, 0, 0);
+      giocaMano(players);
     }
   });
 
@@ -130,7 +133,7 @@ io.on("connection", (socket) => {
   });
 });
 
-var giocaMano = function (players, puntiPrimoTeam, puntiSecondoTeam) {
+var giocaMano = function (players) {
   //ASSEGNO LA MANO AD OGNI PLAYER
 
   for (var j = 0; j < 40; j += 10) {
@@ -211,7 +214,11 @@ var onCard = function (scoekt, id, data) {
 
       console.log("aggiungo carte anche tra quelle da toglire dal campo");
       carte.push(campo[i]);
-      ultimaPresa = 1;
+      if (index == 0 || index == 2) {
+        ultimaPresa = 1;
+      } else {
+        ultimaPresa = 2;
+      }
     }
     //svuoto il campo
     campo.splice(0, campo.length);
@@ -231,7 +238,11 @@ var onCard = function (scoekt, id, data) {
           prese2.push(data);
         }
         campo.splice(i, 1);
-        ultimaPresa = 1;
+        if (index == 0 || index == 2) {
+          ultimaPresa = 1;
+        } else {
+          ultimaPresa = 2;
+        }
         presa = 1;
 
         carte.push(campo[i]);
@@ -317,7 +328,11 @@ var onCard = function (scoekt, id, data) {
 
       //c'è solo una somma possibile ed è somma classica
       if (contaSomme == 1 && !sommeTriple) {
-        ultimaPresa = 1;
+        if (index == 0 || index == 2) {
+          ultimaPresa = 1;
+        } else {
+          ultimaPresa = 2;
+        }
         for (var i = 0; i < campo.length; i++) {
           for (var j = i + 1; j < campo.length; j++) {
             if (campo[i].valore + campo[j].valore == data.valore) {
@@ -347,7 +362,11 @@ var onCard = function (scoekt, id, data) {
 
       //c'è solo una somma tripla
       if (contaSomme == 0 && sommeTriple) {
-        ultimaPresa = 1;
+        if (index == 0 || index == 2) {
+          ultimaPresa = 1;
+        } else {
+          ultimaPresa = 2;
+        }
         if (tipoSommaTripla == 1) {
           for (var i = 0; i < campo.length; i++) {
             if (
@@ -392,7 +411,11 @@ var onCard = function (scoekt, id, data) {
       //mando un messaggio generico
       if (contaSomme > 1) {
         socketsList[index].emit("sommeMultiple", campo);
-        ultimaPresa = 1;
+        if (index == 0 || index == 2) {
+          ultimaPresa = 1;
+        } else {
+          ultimaPresa = 2;
+        }
         console.log("ho troavto più somme possibili");
         //aggiugo la carta gicoata alle prese, tanto una somma verrà scelta
         if (index == 0 || index == 2) {
@@ -411,7 +434,15 @@ var onCard = function (scoekt, id, data) {
             lastPlayedCard: data,
           });
         } else {
-          endGame(prese1, prese2, socketsList);
+          if (index == 3) {
+            endGame(prese1, prese2, socketsList);
+          } else {
+            players[(index + 1) % 4].isPlaying = 1;
+            io.to(players[0].table).emit("tableCards", {
+              campo: campo,
+              lastPlayedCard: data,
+            });
+          }
         }
       }
     } else {
@@ -425,7 +456,15 @@ var onCard = function (scoekt, id, data) {
           lastPlayedCard: data,
         });
       } else {
-        endGame(prese1, prese2, socketsList);
+        if (index == 3) {
+          endGame(prese1, prese2, socketsList);
+        } else {
+          players[(index + 1) % 4].isPlaying = 1;
+          io.to(players[0].table).emit("tableCards", {
+            campo: campo,
+            lastPlayedCard: data,
+          });
+        }
       }
     }
   } else {
@@ -440,7 +479,15 @@ var onCard = function (scoekt, id, data) {
         lastPlayedCard: data,
       });
     } else {
-      endGame(prese1, prese2, socketsList);
+      if (index == 3) {
+        endGame(prese1, prese2, socketsList);
+      } else {
+        players[(index + 1) % 4].isPlaying = 1;
+        io.to(players[0].table).emit("tableCards", {
+          campo: campo,
+          lastPlayedCard: data,
+        });
+      }
     }
   }
   console.log("sono arrivato in fondo, cambio il giocatore che deve gicoare");
@@ -451,8 +498,406 @@ var onCard = function (scoekt, id, data) {
   });
 };
 
+var endGame = function (prese1, prese2, socketsList, id) {
+  console.log("endgame raggiunto");
+
+  if (ultimaPresa == 1) {
+    for (i in campo) {
+      prese1.push(campo[i]);
+    }
+  } else {
+    for (i in campo) {
+      prese2.push(campo[i]);
+    }
+  }
+
+  var data = {
+    prese1: prese1,
+    scope1: scope1,
+    prese2: prese2,
+    scope2: scope2,
+  };
+  var player = getCurrentPlayerById(id);
+  //invio le prese fatta dalle diverse squadre con le rispettive scope
+  io.to(player.id).emit("prese", { data: data });
+
+  //CONTEGGIO DEI PUNTI
+
+  var punti1 = 0;
+  var punti2 = 0;
+
+  //carte
+  if (prese1.length > prese2.length) {
+    punti1++;
+    console.log("carte di squadra 1 con: ", prese1.length);
+  } else {
+    if (prese1.length < prese2.length) {
+      punti2++;
+      console.log("carte di squadra 2 con: ", prese2.length);
+    }
+  }
+  //fine carte
+
+  //setteBello
+  for (var i in prese1) {
+    if (prese1[i].valore == 7 && prese1[i].seme == "D") {
+      punti1++;
+      console.log("settebello della squadra 1 in posizione: ", i);
+      console.log("controllo: ", prese1[i]);
+    }
+  }
+
+  for (var i in prese2) {
+    if (prese2[i].valore == 7 && prese2[i].seme == "D") {
+      punti2++;
+      console.log("settebello della squadra 2 in posizione: ", i);
+      console.log("controllo: ", prese2[i]);
+    }
+  }
+  //fine settebello
+
+  //primiera
+  var sette = [0, 0, 0, 0];
+  var sei = [0, 0, 0, 0];
+  var asso = [0, 0, 0, 0];
+  var cinque = [0, 0, 0, 0];
+
+  var sette2 = [0, 0, 0, 0];
+  var sei2 = [0, 0, 0, 0];
+  var asso2 = [0, 0, 0, 0];
+  var cinque2 = [0, 0, 0, 0];
+
+  var totale = [0, 0, 0, 0];
+  var totale2 = [0, 0, 0, 0];
+
+  var semi = ["H", "D", "C", "S"];
+  var semiEsclusione = semi;
+
+  for (i in prese1) {
+    if (prese1[i].valore == 7) {
+      if (prese1[i].seme == "H") {
+        sette[0] = 21;
+      }
+      if (prese1[i].seme == "D") {
+        sette[1] = 21;
+      }
+      if (prese1[i].seme == "S") {
+        sette[2] = 21;
+      }
+      if (prese1[i].seme == "C") {
+        sette[3] = 21;
+      }
+    }
+    if (prese1[i].valore == 6) {
+      if (prese1[i].seme == "H") {
+        sei[0] = 18;
+      }
+      if (prese1[i].seme == "D") {
+        sei[1] = 18;
+      }
+      if (prese1[i].seme == "S") {
+        sei[2] = 18;
+      }
+      if (prese1[i].seme == "C") {
+        sei[3] = 18;
+      }
+    }
+    if (prese1[i].valore == 1) {
+      if (prese1[i].seme == "H") {
+        asso[0] = 16;
+      }
+      if (prese1[i].seme == "D") {
+        asso[1] = 16;
+      }
+      if (prese1[i].seme == "S") {
+        asso[2] = 16;
+      }
+      if (prese1[i].seme == "C") {
+        asso[3] = 16;
+      }
+    }
+    if (prese1[i].valore == 5) {
+      if (prese1[i].seme == "H") {
+        cinque[0] = 15;
+      }
+      if (prese1[i].seme == "D") {
+        cinque[1] = 15;
+      }
+      if (prese1[i].seme == "S") {
+        cinque[2] = 15;
+      }
+      if (prese1[i].seme == "C") {
+        cinque[3] = 15;
+      }
+    }
+  }
+
+  for (i in prese2) {
+    if (prese2[i].valore == 7) {
+      if (prese2[i].seme == "H") {
+        sette2[0] = 21;
+      }
+      if (prese2[i].seme == "D") {
+        sette2[1] = 21;
+      }
+      if (prese2[i].seme == "S") {
+        sette2[2] = 21;
+      }
+      if (prese2[i].seme == "C") {
+        sette2[3] = 21;
+      }
+    }
+    if (prese2[i].valore == 6) {
+      if (prese2[i].seme == "H") {
+        sei2[0] = 18;
+      }
+      if (prese2[i].seme == "D") {
+        sei2[1] = 18;
+      }
+      if (prese2[i].seme == "S") {
+        sei2[2] = 18;
+      }
+      if (prese2[i].seme == "C") {
+        sei2[3] = 18;
+      }
+    }
+    if (prese2[i].valore == 1) {
+      if (prese2[i].seme == "H") {
+        asso2[0] = 16;
+      }
+      if (prese2[i].seme == "D") {
+        asso2[1] = 16;
+      }
+      if (prese2[i].seme == "S") {
+        asso2[2] = 16;
+      }
+      if (prese2[i].seme == "C") {
+        asso2[3] = 16;
+      }
+    }
+    if (prese2[i].valore == 5) {
+      if (prese2[i].seme == "H") {
+        cinque2[0] = 15;
+      }
+      if (prese2[i].seme == "D") {
+        cinque2[1] = 15;
+      }
+      if (prese2[i].seme == "S") {
+        cinque2[2] = 15;
+      }
+      if (prese2[i].seme == "C") {
+        cinque2[3] = 15;
+      }
+    }
+  }
+
+  var controlloZeri = 0;
+  var controlloZeri2 = 0;
+
+  for (i in totale) {
+    totale[i] = sette[i] + sei[i] + asso[i] + cinque[i];
+    if (totale[i] == 0) {
+      controlloZeri++;
+    }
+    totale2[i] = sette2[i] + sei2[i] + asso2[i] + cinque2[i];
+    if (totale2[i] == 0) {
+      controlloZeri2++;
+    }
+  }
+
+  if (controlloZeri == 0 && controlloZeri2 == 0) {
+    if (
+      totale[0] + totale[1] + totale[2] + totale[3] >
+      totale2[0] + totale2[1] + totale2[2] + totale2[3]
+    ) {
+      punti1++;
+      console.log("la squadra 1 ha fatto la primiera");
+    } else {
+      if (
+        totale[0] + totale[1] + totale[2] + totale[3] <
+        totale2[0] + totale2[1] + totale2[2] + totale2[3]
+      ) {
+        punti2++;
+        console.log("la squadra 2 ha fatto la primiera");
+      } else {
+        console.log("la primiera è pari");
+      }
+    }
+  } else {
+    if (controlloZeri == 0 && controlloZeri2 != 0) {
+      punti1++;
+      console.log("la squadra 1 ha fatto la primiera");
+    } else {
+      if (controlloZeri != 0 && controlloZeri2 == 0) {
+        punti2++;
+        console.log("la squadra 2 ha fatto la primiera");
+      } else {
+        if (
+          totale[0] + totale[1] + totale[2] + totale[3] >
+          totale2[0] + totale2[1] + totale2[2] + totale2[3]
+        ) {
+          punti1++;
+          console.lof("la squadra 1 ha fatto la primiera");
+        } else {
+          if (
+            totale[0] + totale[1] + totale[2] + totale[3] <
+            totale2[0] + totale2[1] + totale2[2] + totale2[3]
+          ) {
+            punti2++;
+            console.log("la squadra 2 ha fatto la primiera");
+          } else {
+            console.log("la primiera è pari");
+          }
+        }
+      }
+    }
+  }
+  //fine primiera
+
+  //aggiungo le scope
+  punti1 += scope1.length;
+  punti2 += scope2.length;
+  // fine aggiunta scope
+
+  //ori
+  var cont = 0;
+  for (i in prese1) {
+    if (prese1[i].seme == "D") {
+      cont++;
+    }
+  }
+  if (cont > 5) {
+    console.log("la prima squadra ha fatto ori");
+    punti1++;
+  } else {
+    if (cont < 5) {
+      console.log("la seconda squadra ha fatto ori");
+      punti2++;
+    }
+  }
+  //fine ori
+
+  //napola
+  console.log("sto calcolando la napola della prima squadra");
+  var napola = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  for (i in prese1) {
+    console.log("carta: ", prese1[i].valore, " seme: ", prese1[i].seme);
+    if (prese1[i].seme == "D") {
+      napola[prese1[i].valore - 1] = 1;
+    }
+  }
+  console.log("questa è la napola fatta dalla prima squadra: ", napola);
+  cont = 0;
+  i = 0;
+  var trovato = false;
+  while (!trovato) {
+    if (napola[i] == 1) {
+      cont++;
+    } else {
+      trovato = 1;
+    }
+    i++;
+  }
+  if (cont >= 3) {
+    punti1 += cont;
+  }
+  if (cont == 10) {
+    //riorda che il player che ha chaimato end game è sempre l'ultimo
+    //se l'ultimo ha come team 0 vuol dire che siamo nel caso scambiato dove i punti1 dovrebbero andare alla squadra due e vicevera
+    var player = getCurrentPlayerById(id);
+    if (player.team == 1) {
+      puntiPrimoTeam = 100000;
+    } else {
+      puntiSecondoTeam = 10000;
+    }
+  }
+
+  napola = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  for (i in prese2) {
+    if (prese2[i].seme == "D") {
+      napola[prese2[i].valore - 1] = 1;
+    }
+  }
+  console.log("questa è la napola fatta dalla seconda squadra: ", napola);
+  cont = 0;
+  i = 0;
+  trovato = false;
+  while (!trovato) {
+    if (napola[i] == 1) {
+      cont++;
+    } else {
+      trovato = 1;
+    }
+    i++;
+  }
+  if (cont >= 3) {
+    punti2 += cont;
+  }
+  if (cont == 10) {
+    var player = getCurrentPlayerById(id);
+    if (player.team == 1) {
+      puntiSecondoTeam = 100000;
+    } else {
+      puntiPrimoTeam = 10000;
+    }
+  }
+
+  var player = getCurrentPlayerById(id);
+  //invio le prese fatta dalle diverse squadre con le rispettive scope
+  io.to(player.id).emit("punti", {
+    puntiPrimoTeam: puntiPrimoTeam,
+    puntiSecondoTeam: puntiSecondoTeam,
+  });
+
+  //CODICE NUOVO PER SIMULARE UN INTERA partita
+  var player = getCurrentPlayerById(id);
+  if (player.team == 1) {
+    puntiPrimoTeam += punti1;
+    puntiSecondoTeam += punti2;
+  } else {
+    puntiPrimoTeam += punti2;
+    puntiSecondoTeam += punti1;
+  }
+
+  if (puntiPrimoTeam >= 21) {
+    if (puntiSecondoTeam < 21) {
+      //vince la parita la squadra 1;
+      io.to(sockets[0].table).emit("winners", {
+        team: 0,
+      });
+    } else {
+      if (puntiPrimoTeam > puntiSecondoTeam) {
+        //vince la partita la squadra 1;
+        io.to(sockets[0].table).emit("winners", {
+          team: 0,
+        });
+      } else {
+        if (puntiPrimoTeam == puntiSecondoTeam) {
+          socketsList = avanzaPosti(socketsList);
+          giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
+        } else {
+          //vince squadra 2;
+          io.to(sockets[0].table).emit("winners", {
+            team: 1,
+          });
+        }
+      }
+    }
+  } else if (puntiSecondoTeam >= 21) {
+    //vince squadra 2;
+    io.to(sockets[0].table).emit("winners", {
+      team: 1,
+    });
+  } else {
+    socketsList = avanzaPosti(socketsList);
+    giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
+  }
+};
+
 /*
 message tablePlayer sends the object 'player' to evreyone
 message tableCards semds the object 'campo' and the last played card to evreone
 message playerCards sends the hand of a specific player only to his clinet
 */
+
+//react spring per le animazioni
