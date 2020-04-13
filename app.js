@@ -139,6 +139,10 @@ io.on("connection", (socket) => {
   socket.on("somma", ({ id, data, last }) => {
     somma(data, id, last);
   });
+
+  socket.on("nextRound", ({}) => {
+    nextRound();
+  });
 });
 
 var giocaMano = function (players) {
@@ -442,7 +446,7 @@ var onCard = function (scoekt, id, data) {
           });
         } else {
           if (index == 3) {
-            endGame(prese1, prese2, socketsList, id);
+            endRound(prese1, prese2, socketsList, id);
           } else {
             players[(index + 1) % 4].isPlaying = 1;
             io.to(players[0].table).emit("tableCards", {
@@ -464,7 +468,7 @@ var onCard = function (scoekt, id, data) {
         });
       } else {
         if (index == 3) {
-          endGame(prese1, prese2, socketsList, id);
+          endRound(prese1, prese2, socketsList, id);
         } else {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
@@ -487,7 +491,7 @@ var onCard = function (scoekt, id, data) {
       });
     } else {
       if (index == 3) {
-        endGame(prese1, prese2, socketsList, id);
+        endRound(prese1, prese2, socketsList, id);
       } else {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
@@ -505,8 +509,11 @@ var onCard = function (scoekt, id, data) {
   });
 };
 
-var endGame = function (prese1, prese2, socketsList, id) {
-  console.log("endgame raggiunto");
+var endRound = function (prese1, prese2, id) {
+  console.log("endRound raggiunto");
+  var player = getCurrentPlayerById(id);
+
+  io.to(player.id).emit("endRound");
 
   if (ultimaPresa == 1) {
     for (i in campo) {
@@ -518,13 +525,22 @@ var endGame = function (prese1, prese2, socketsList, id) {
     }
   }
 
-  var data = {
-    prese1: prese1,
-    scope1: scope1,
-    prese2: prese2,
-    scope2: scope2,
-  };
-  var player = getCurrentPlayerById(id);
+  if (player.team == 1) {
+    var data = {
+      prese1: prese1,
+      scope1: scope1,
+      prese2: prese2,
+      scope2: scope2,
+    };
+  } else {
+    var data = {
+      prese1: prese2,
+      scope1: scope2,
+      prese2: prese1,
+      scope2: scope1,
+    };
+  }
+
   //invio le prese fatta dalle diverse squadre con le rispettive scope
   io.to(player.id).emit("prese", { data: data });
 
@@ -811,7 +827,7 @@ var endGame = function (prese1, prese2, socketsList, id) {
   if (cont == 10) {
     //riorda che il player che ha chaimato end game è sempre l'ultimo
     //se l'ultimo ha come team 0 vuol dire che siamo nel caso scambiato dove i punti1 dovrebbero andare alla squadra due e vicevera
-    var player = getCurrentPlayerById(id);
+
     if (player.team == 1) {
       puntiPrimoTeam = 100000;
     } else {
@@ -841,20 +857,12 @@ var endGame = function (prese1, prese2, socketsList, id) {
     punti2 += cont;
   }
   if (cont == 10) {
-    var player = getCurrentPlayerById(id);
     if (player.team == 1) {
       puntiSecondoTeam = 100000;
     } else {
       puntiPrimoTeam = 10000;
     }
   }
-
-  var player = getCurrentPlayerById(id);
-  //invio le prese fatta dalle diverse squadre con le rispettive scope
-  io.to(player.id).emit("punti", {
-    puntiPrimoTeam: puntiPrimoTeam,
-    puntiSecondoTeam: puntiSecondoTeam,
-  });
 
   //CODICE NUOVO PER SIMULARE UN INTERA partita
   var player = getCurrentPlayerById(id);
@@ -865,6 +873,11 @@ var endGame = function (prese1, prese2, socketsList, id) {
     puntiPrimoTeam += punti2;
     puntiSecondoTeam += punti1;
   }
+
+  io.to(player.id).emit("punti", {
+    puntiPrimoTeam: puntiPrimoTeam,
+    puntiSecondoTeam: puntiSecondoTeam,
+  });
 
   if (puntiPrimoTeam >= 21) {
     if (puntiSecondoTeam < 21) {
@@ -879,15 +892,10 @@ var endGame = function (prese1, prese2, socketsList, id) {
           team: 0,
         });
       } else {
-        if (puntiPrimoTeam == puntiSecondoTeam) {
-          socketsList = avanzaPosti(socketsList);
-          giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
-        } else {
-          //vince squadra 2;
-          io.to(sockets[0].table).emit("winners", {
-            team: 1,
-          });
-        }
+        //vince squadra 2;
+        io.to(sockets[0].table).emit("winners", {
+          team: 1,
+        });
       }
     }
   } else if (puntiSecondoTeam >= 21) {
@@ -895,19 +903,13 @@ var endGame = function (prese1, prese2, socketsList, id) {
     io.to(sockets[0].table).emit("winners", {
       team: 1,
     });
-  } else {
-    socketsList = avanzaPosti(socketsList);
-    giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
   }
 };
 
 var somma = function (data, id, last) {
   for (var j in data) {
     for (var i = 0; i < campo.length; i++) {
-      if (
-        campo[i].valore == data[j].valore &&
-        campo[i].seme == data[j].seme
-      ) {
+      if (campo[i].valore == data[j].valore && campo[i].seme == data[j].seme) {
         if (index == 0 || index == 2) {
           prese1.push(campo[i]);
           carte.push(campo[i]);
@@ -941,7 +943,7 @@ var somma = function (data, id, last) {
   } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
     if (index == 3) {
-      endGame(prese1, prese2, socketsList, id);
+      endRound(prese1, prese2, socketsList, id);
     } else {
       players[(index + 1) % 4].isPlaying = 1;
       io.to(player.table).emit("tablePlayers", {
@@ -950,6 +952,11 @@ var somma = function (data, id, last) {
       });
     }
   }
+};
+
+var nextRound = function () {
+  socketsList = avanzaPosti(socketsList);
+  giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
 };
 
 /*
