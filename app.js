@@ -512,7 +512,7 @@ var onCard = function (scoekt, id, data) {
 var endRound = function (prese1, prese2, id) {
   console.log("endRound raggiunto");
   var player = getCurrentPlayerById(id);
-
+  console.log(player);
   io.to(player.id).emit("endRound");
 
   if (ultimaPresa == 1) {
