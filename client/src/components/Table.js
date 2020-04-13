@@ -3,12 +3,12 @@ import { Container } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
-import { useSpring, useTrail, animated } from "react-spring";
+// import { useSpring, useTrail, animated } from "react-spring";
 import { Trail } from "react-spring/renderprops";
 
 const Table = ({ socket, history }) => {
-  const props = useSpring({ opacity: 1, from: { opacity: 0 } });
-  const AnimatedPlayingCard = animated(PlayingCard);
+  //   const props = useSpring({ opacity: 1, from: { opacity: 0 } });
+  //   const AnimatedPlayingCard = animated(PlayingCard);
 
   const { username, setUsername, table, setTable } = useContext(GameContext);
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
@@ -70,7 +70,6 @@ const Table = ({ socket, history }) => {
     socket.on("tableCards", ({ campo, lastPlayedCard }) => {
       setCampo(campo);
       setLastPlayed(lastPlayedCard);
-      //   console.log(campo);
     });
 
     socket.on("sommeMultiple", () => {
@@ -120,15 +119,15 @@ const Table = ({ socket, history }) => {
       <h4>Campo</h4>
       <Container fluid style={{ minHeight: 100 }}>
         {campo.map((card, i) => (
-          <AnimatedPlayingCard
+          <PlayingCard
+            size="large"
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
-            disabled={!somme}
-            style={{
-              ...props,
-              border: selectedCards.includes(card) ? "5px solid red" : null,
-            }}
+            disabled={!somme || !selectedCards.includes(card)}
+            // style={{
+            //   border: selectedCards.includes(card) ? "5px solid red" : null,
+            // }}
           />
         ))}
       </Container>

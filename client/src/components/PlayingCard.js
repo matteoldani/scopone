@@ -22,6 +22,10 @@ const PlayingCard = ({ seme, valore, onClick, disabled, size, style }) => {
         height: 178,
         width: 114,
         fontSize: 25,
+        opacity: 1,
+        border: disabled ? "2px solid black" : "3px solid red",
+        boxShadow: "4px 4px 10px 0 rgba(0, 0, 0, 0.2)",
+        cursor: disabled ? "default" : null,
       }}
       onClick={onClick}
       disabled={disabled}
