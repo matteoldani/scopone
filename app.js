@@ -902,11 +902,11 @@ var endGame = function (prese1, prese2, socketsList, id) {
 };
 
 var somma = function (data, id, last) {
-  for (var j in data.data) {
+  for (var j in data) {
     for (var i = 0; i < campo.length; i++) {
       if (
-        campo[i].valore == data.data[j].valore &&
-        campo[i].seme == data.data[j].seme
+        campo[i].valore == data[j].valore &&
+        campo[i].seme == data[j].seme
       ) {
         if (index == 0 || index == 2) {
           prese1.push(campo[i]);
@@ -928,27 +928,6 @@ var somma = function (data, id, last) {
     lastPlayedCard: last,
   });
   carte.splice(0, carte.length);
-
-  if (contatoreTurno != 10) {
-    if (index == 3) {
-      contatoreTurno++;
-    }
-    players[(index + 1) % 4].isPlaying = 1;
-    io.to(players[0].table).emit("tableCards", {
-      campo: campo,
-      lastPlayedCard: last,
-    });
-  } else {
-    if (index == 3) {
-      endGame(prese1, prese2, socketsList, id);
-    } else {
-      players[(index + 1) % 4].isPlaying = 1;
-      io.to(players[0].table).emit("tableCards", {
-        campo: campo,
-        lastPlayedCard: last,
-      });
-    }
-  }
 
   if (contatoreTurno != 10) {
     if (index == 3) {
