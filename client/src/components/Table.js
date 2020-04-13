@@ -4,7 +4,7 @@ import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
 
-const Table = ({ socket, match }) => {
+const Table = ({ socket, history }) => {
   const { username, setUsername, table, setTable } = useContext(GameContext);
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
   const [players, setPlayers] = useState([]);
@@ -57,15 +57,6 @@ const Table = ({ socket, match }) => {
     }
   };
 
-  //   const findPlayer = (username) => {
-  //     for (let i = 0; i < playerList.length; ++i) {
-  //       if (playerList[i].username === username) {
-  //         setPlayer(playerList[i]);
-  //         break;
-  //       }
-  //     }
-  //   };
-
   useEffect(() => {
     socket.on("playerCards", ({ cards }) => {
       setCards(cards);
@@ -93,7 +84,11 @@ const Table = ({ socket, match }) => {
       }
       setClicked(0);
     });
-  }, [socket, players, username]);
+
+    socket.on("endRound", () => {
+      history.push("/round");
+    });
+  }, [socket, history, players, username]);
 
   return (
     <Container fluid style={{ backgroundColor: "#28a745", minHeight: "100vh" }}>

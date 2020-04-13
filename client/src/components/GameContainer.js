@@ -5,8 +5,8 @@ import io from "socket.io-client";
 
 import Table from "./Table";
 import Team from "./Team";
-import FineMano from "./FineMano";
-import FinePartita from "./FinePartita";
+import EndRound from "./EndRound";
+import EndGame from "./EndGame";
 
 let socket;
 const SERVER = "localhost:8081";
@@ -18,14 +18,14 @@ const GameContainer = () => {
       <Route path="/team" exact component={() => <Team socket={socket} />} />
       <Route path="/table" exact component={() => <Table socket={socket} />} />
       <Route
-        path="/finemano"
+        path="/round"
         exact
-        component={() => <FineMano socket={socket} />}
+        component={() => <EndRound socket={socket} />}
       />
       <Route
-        path="/finepartita"
+        path="/endgame"
         exact
-        component={() => <FinePartita socket={socket} />}
+        component={() => <EndGame socket={socket} />}
       />
     </Switch>
   );
