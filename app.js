@@ -939,27 +939,6 @@ var somma = function (data, id, last) {
       lastPlayedCard: last,
     });
   } else {
-    if (index == 3) {
-      endGame(prese1, prese2, socketsList, id);
-    } else {
-      players[(index + 1) % 4].isPlaying = 1;
-      io.to(players[0].table).emit("tableCards", {
-        campo: campo,
-        lastPlayedCard: last,
-      });
-    }
-  }
-
-  if (contatoreTurno != 10) {
-    if (index == 3) {
-      contatoreTurno++;
-    }
-    players[(index + 1) % 4].isPlaying = 1;
-    io.to(players[0].table).emit("tableCards", {
-      campo: campo,
-      lastPlayedCard: last,
-    });
-  } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
     if (index == 3) {
       endGame(prese1, prese2, socketsList, id);
