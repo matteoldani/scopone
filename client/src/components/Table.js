@@ -3,8 +3,13 @@ import { Container } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
+import { useSpring, useTrail, animated } from "react-spring";
+import { Trail } from "react-spring/renderprops";
 
 const Table = ({ socket, history }) => {
+  const props = useSpring({ opacity: 1, from: { opacity: 0 } });
+  const AnimatedPlayingCard = animated(PlayingCard);
+
   const { username, setUsername, table, setTable } = useContext(GameContext);
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
   const [players, setPlayers] = useState([]);
@@ -115,12 +120,13 @@ const Table = ({ socket, history }) => {
       <h4>Campo</h4>
       <Container fluid style={{ minHeight: 100 }}>
         {campo.map((card, i) => (
-          <PlayingCard
+          <AnimatedPlayingCard
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
             disabled={!somme}
             style={{
+              ...props,
               border: selectedCards.includes(card) ? "5px solid red" : null,
             }}
           />
@@ -129,14 +135,38 @@ const Table = ({ socket, history }) => {
       <hr />
       <h4>Mano</h4>
       <Container fluid>
+        <Trail
+          items={cards}
+          keys={(card) => card.valore.toString() + card.seme}
+          from={{
+            transform: "rotateY(-180deg) translate3d(-5000px,-2000px,0) ",
+          }}
+          to={{
+            transform: "rotateY(0) translate3d(0,0px,0) ",
+          }}
+        >
+          {(card) => (props) => (
+            <PlayingCard
+              style={props}
+              seme={card.seme}
+              valore={card.valore}
+              onClick={() => handleCardClick(card)}
+              disabled={!player.isPlaying || clicked}
+            />
+          )}
+        </Trail>
+        {/*}
         {cards.map((card, i) => (
-          <PlayingCard
+          <AnimatedPlayingCard
+            key={valore}
+            style={props}
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleCardClick(card)}
             disabled={!player.isPlaying || clicked}
           />
         ))}
+        */}
       </Container>
     </Container>
   );
