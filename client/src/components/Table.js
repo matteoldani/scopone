@@ -41,7 +41,11 @@ const Table = ({ socket, match }) => {
     let newTot = data.valore + tot;
     if (newTot === lastPlayed.valore) {
       console.log("somma ok");
-      socket.emit("somma", [...selectedCards, data]);
+      socket.emit("somma", {
+        id: player.id,
+        data: [...selectedCards, data],
+        last: lastPlayed,
+      });
       setSelectedCards([]);
       setSomme(0);
     } else if (newTot < lastPlayed.valore) {
@@ -67,9 +71,9 @@ const Table = ({ socket, match }) => {
       setCards(cards);
     });
 
-    socket.on("tableCards", ({ campo }) => {
+    socket.on("tableCards", ({ campo, lastPlayedCard }) => {
       setCampo(campo);
-      //   setLastPlayed(lastPlayedCard);
+      setLastPlayed(lastPlayedCard);
       //   console.log(campo);
     });
 
@@ -104,12 +108,11 @@ const Table = ({ socket, match }) => {
       ))}
       <br />
       <strong>Ultima carta giocata: </strong>
-      <span>
-        {lastPlayed.seme === "S" ? "&spades;" : null}
-        {lastPlayed.seme === "H" ? "&hearts;" : null}
-        {lastPlayed.seme === "D" ? "&diamonds;" : null}
-        {lastPlayed.seme === "C" ? "&clubs;" : null} {lastPlayed.valore}
-      </span>
+      {lastPlayed.seme === "S" ? <span>&spades;</span> : null}
+      {lastPlayed.seme === "H" ? <span>&hearts;</span> : null}
+      {lastPlayed.seme === "D" ? <span>&diamonds;</span> : null}
+      {lastPlayed.seme === "C" ? <span>&clubs;</span> : null}{" "}
+      {lastPlayed.valore}
       {player.isPlaying ? (
         <h4 className="text-white text-center">Tocca a te giocare!</h4>
       ) : null}
@@ -117,12 +120,6 @@ const Table = ({ socket, match }) => {
       <h4>Campo</h4>
       <Container fluid style={{ minHeight: 100 }}>
         {campo.map((card, i) => (
-          //   <Button
-          //     key={i}
-          //     variant="outline-light"
-          //     onClick={() => handleCardClick(card)}
-          //     disabled={!somme}
-          //   >
           <PlayingCard
             seme={card.seme}
             valore={card.valore}
@@ -138,14 +135,6 @@ const Table = ({ socket, match }) => {
       <h4>Mano</h4>
       <Container fluid>
         {cards.map((card, i) => (
-          //   <Button
-          //     className="mr-2"
-          //     key={i}
-          //     variant="outline-light"
-          //     onClick={() => handleCardClick(card)}
-          //     disabled={!player.isPlaying || clicked}
-          //   >
-          //   </Button>
           <PlayingCard
             seme={card.seme}
             valore={card.valore}
