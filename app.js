@@ -136,8 +136,8 @@ io.on("connection", (socket) => {
     onCard(socket, id, data);
   });
 
-  socket.on("somma", ({ id, data }) => {
-    somma(data, id);
+  socket.on("somma", ({ id, data, last }) => {
+    somma(data, id, last);
   });
 });
 
