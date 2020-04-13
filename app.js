@@ -902,11 +902,11 @@ var endGame = function (prese1, prese2, socketsList, id) {
 };
 
 var somma = function (data, id, last) {
-  for (var j in data.data) {
+  for (var j in data) {
     for (var i = 0; i < campo.length; i++) {
       if (
-        campo[i].valore == data.data[j].valore &&
-        campo[i].seme == data.data[j].seme
+        campo[i].valore == data[j].valore &&
+        campo[i].seme == data[j].seme
       ) {
         if (index == 0 || index == 2) {
           prese1.push(campo[i]);
