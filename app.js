@@ -934,9 +934,9 @@ var somma = function (data, id, last) {
       contatoreTurno++;
     }
     players[(index + 1) % 4].isPlaying = 1;
-    io.to(players[0].table).emit("tableCards", {
-      campo: campo,
-      lastPlayedCard: last,
+    io.to(player.table).emit("tablePlayers", {
+      table: player.table,
+      players: getTablePlayer(player.table),
     });
   } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
@@ -944,9 +944,9 @@ var somma = function (data, id, last) {
       endGame(prese1, prese2, socketsList, id);
     } else {
       players[(index + 1) % 4].isPlaying = 1;
-      io.to(players[0].table).emit("tableCards", {
-        campo: campo,
-        lastPlayedCard: last,
+      io.to(player.table).emit("tablePlayers", {
+        table: player.table,
+        players: getTablePlayer(player.table),
       });
     }
   }

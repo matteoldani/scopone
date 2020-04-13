@@ -77,7 +77,7 @@ var ordinaMano = function (mano) {
 
 //la squadra avanza di un posto e si prepara per la mano successiva
 var avanzaPosti = function (players) {
-  var temp = platers[3];
+  var temp = players[3];
   for (var i = 3; i < 0; i--) {
     platers[i] = players[i - 1];
   }
