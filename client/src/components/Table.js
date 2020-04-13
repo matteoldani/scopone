@@ -103,11 +103,11 @@ const Table = ({ socket, history }) => {
       ))}
       <br />
       <strong>Ultima carta giocata: </strong>
-      {lastPlayed.seme === "S" ? <span>&spades;</span> : null}
-      {lastPlayed.seme === "H" ? <span>&hearts;</span> : null}
-      {lastPlayed.seme === "D" ? <span>&diamonds;</span> : null}
-      {lastPlayed.seme === "C" ? <span>&clubs;</span> : null}{" "}
-      {lastPlayed.valore}
+      <PlayingCard
+        size="small"
+        seme={lastPlayed.seme}
+        valore={lastPlayed.valore}
+      />
       {player.isPlaying ? (
         <h4 className="text-white text-center">Tocca a te giocare!</h4>
       ) : null}
@@ -116,6 +116,7 @@ const Table = ({ socket, history }) => {
       <Container fluid style={{ minHeight: 100 }}>
         {campo.map((card, i) => (
           <PlayingCard
+            size="large"
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
