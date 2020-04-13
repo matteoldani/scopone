@@ -446,7 +446,7 @@ var onCard = function (scoekt, id, data) {
           });
         } else {
           if (index == 3) {
-            endRound(prese1, prese2, socketsList, id);
+            endRound(prese1, prese2, id);
           } else {
             players[(index + 1) % 4].isPlaying = 1;
             io.to(players[0].table).emit("tableCards", {
@@ -468,7 +468,7 @@ var onCard = function (scoekt, id, data) {
         });
       } else {
         if (index == 3) {
-          endRound(prese1, prese2, socketsList, id);
+          endRound(prese1, prese2, id);
         } else {
           players[(index + 1) % 4].isPlaying = 1;
           io.to(players[0].table).emit("tableCards", {
@@ -491,7 +491,7 @@ var onCard = function (scoekt, id, data) {
       });
     } else {
       if (index == 3) {
-        endRound(prese1, prese2, socketsList, id);
+        endRound(prese1, prese2, id);
       } else {
         players[(index + 1) % 4].isPlaying = 1;
         io.to(players[0].table).emit("tableCards", {
@@ -512,8 +512,8 @@ var onCard = function (scoekt, id, data) {
 var endRound = function (prese1, prese2, id) {
   console.log("endRound raggiunto");
   var player = getCurrentPlayerById(id);
-  console.log(player);
-  io.to(player.id).emit("endRound");
+  console.log(id);
+  io.to(player.table).emit("endRound");
 
   if (ultimaPresa == 1) {
     for (i in campo) {
@@ -943,7 +943,7 @@ var somma = function (data, id, last) {
   } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
     if (index == 3) {
-      endRound(prese1, prese2, socketsList, id);
+      endRound(prese1, prese2, id);
     } else {
       players[(index + 1) % 4].isPlaying = 1;
       io.to(player.table).emit("tablePlayers", {
