@@ -19,6 +19,30 @@ const {
   avanzaPosti,
 } = require("./utils/gameLoopFunctions");
 
+var Tavolo = function () {
+  var self = {
+    socketsList: [],
+    mazzo: makeDeck(),
+    mani: [[], [], [], []],
+    carte: [],
+    prese1: [],
+    prese2: [],
+    scope1: [],
+    scope2: [],
+    campo: [],
+    ultimapresa: 0,
+    contatoreTurno: 1,
+    players: [],
+    puntiPrimoTeam: 0,
+    puntiSecondoTeam: 0,
+    index: 0,
+  };
+  return self;
+};
+
+var tavoli = {};
+
+/*
 var socketsList = [];
 var mazzo = makeDeck();
 
@@ -45,7 +69,7 @@ var puntiPrimoTeam = 0;
 var puntiSecondoTeam = 0;
 
 var index;
-
+*/
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
 app.get("/", function (req, res) {
@@ -62,6 +86,9 @@ var io = require("socket.io")(server, {});
 io.on("connection", (socket) => {
   //join table
   socket.on("joinTable", ({ username, table }) => {
+    if (tavoli[table] == null) {
+      tavoli[table] = Tavolo();
+    }
     currentPlayers = getTablePlayer(table);
     var controllo = 0;
     //controllo che il tavolo non sia pieno
