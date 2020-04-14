@@ -21,8 +21,6 @@ const {
 
 var socketsList = [];
 var mazzo = makeDeck();
-//mischio il mazzo
-var numeri = estrazioneCasuale();
 
 //lista con tutti le mani
 var mani = [[], [], [], []];
@@ -129,7 +127,7 @@ io.on("connection", (socket) => {
     if (players.length == 4) {
       players = initGame(players, io);
       io.to(players[0].table).emit("gameIsStarting");
-      giocaMano(players);
+      giocaMano();
     }
   });
 
@@ -147,9 +145,11 @@ io.on("connection", (socket) => {
   });
 });
 
-var giocaMano = function (players) {
-  //ASSEGNO LA MANO AD OGNI PLAYER
+var giocaMano = function () {
+  //mischio il mazzo
+  var numeri = estrazioneCasuale();
 
+  //ASSEGNO LA MANO AD OGNI PLAYER
   for (var j = 0; j < 40; j += 10) {
     if (j == 0) {
       players[j].isPlaying = 1;
@@ -957,8 +957,16 @@ var somma = function (data, id, last) {
 
 var nextRound = function () {
   socketsList = avanzaPosti(socketsList);
-  console.log(socketsList);
-  giocaMano(socketsList);
+  players = avanzaPosti(players);
+  contatoreTurno = 1;
+  mani = [[], [], [], []];
+  prese1 = [];
+  prese2 = [];
+  scope1 = [];
+  scope2 = [];
+  campo = [];
+  ultimaPresa = 0;
+  giocaMano();
 };
 
 /*

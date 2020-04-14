@@ -1,12 +1,9 @@
-import React, { useEffect } from "react";
-import { Switch, Route } from "react-router-dom";
-
+import React from "react";
+import { Route, Switch } from "react-router-dom";
 import io from "socket.io-client";
-
+import EndRound from "./endround/EndRound";
 import Table from "./Table";
 import Team from "./Team";
-import EndRound from "./EndRound";
-import EndGame from "./EndGame";
 
 let socket;
 const SERVER = "localhost:8081";
@@ -21,11 +18,6 @@ const GameContainer = () => {
         path="/round"
         exact
         component={() => <EndRound socket={socket} />}
-      />
-      <Route
-        path="/endgame"
-        exact
-        component={() => <EndGame socket={socket} />}
       />
     </Switch>
   );

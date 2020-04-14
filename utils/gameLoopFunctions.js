@@ -77,11 +77,11 @@ var ordinaMano = function (mano) {
 
 //la squadra avanza di un posto e si prepara per la mano successiva
 var avanzaPosti = function (players) {
-  var temp = players[3];
-  for (var i = 3; i < 0; i--) {
-    platers[i] = players[i - 1];
+  var temp = players[0];
+  for (var i = 0; i < 3; i++) {
+    players[i] = players[i + 1];
   }
-  players[0] = temp;
+  players[3] = temp;
   return players;
 };
 

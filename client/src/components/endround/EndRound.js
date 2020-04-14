@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
-import { GameContext } from "./GameContext";
+import { GameContext } from "../GameContext";
 import { withRouter } from "react-router-dom";
-import PlayingCard from "./PlayingCard";
+import PlayingCard from "../PlayingCard";
+import WinnerCard from "./WinnerCard";
 
 const EndRound = ({ socket, history }) => {
   const {
@@ -42,6 +43,8 @@ const EndRound = ({ socket, history }) => {
     },
   ]);
 
+  const [winner, setWinner] = useState(2);
+
   const nextRound = () => {
     socket.emit("nextRound");
   };
@@ -68,8 +71,9 @@ const EndRound = ({ socket, history }) => {
       ]);
     });
 
-    socket.on("winners", () => {
+    socket.on("winners", ({ team }) => {
       console.log("winners");
+      setWinner(team);
     });
 
     socket.on("gameIsStarting", () => {
@@ -85,15 +89,22 @@ const EndRound = ({ socket, history }) => {
         <span key={i}>{player.username} </span>
       ))}
       <br />
-      {playerOne === player.username ? (
-        <>
-          <br />
-          <Button onClick={nextRound} variant="success">
-            Prossima Mano
-          </Button>
-          <br />
-        </>
-      ) : null}
+      {winner === 2 ? (
+        playerOne === player.username ? (
+          <>
+            <br />
+            <Button onClick={nextRound} variant="success">
+              Prossima Mano
+            </Button>
+            <br />
+          </>
+        ) : null
+      ) : (
+        <WinnerCard
+          winner={winner}
+          players={players.filter((player) => player.team === winner - 1)}
+        />
+      )}
       <br />
       <Row>
         {[0, 1].map((team) => (
