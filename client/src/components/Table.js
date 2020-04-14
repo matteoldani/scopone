@@ -10,9 +10,18 @@ const Table = ({ socket, history }) => {
   //   const props = useSpring({ opacity: 1, from: { opacity: 0 } });
   //   const AnimatedPlayingCard = animated(PlayingCard);
 
-  const { username, setUsername, table, setTable } = useContext(GameContext);
-  const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
-  const [players, setPlayers] = useState([]);
+  const {
+    username,
+    setUsername,
+    table,
+    setTable,
+    player,
+    setPlayer,
+    players,
+    setPlayers,
+  } = useContext(GameContext);
+  //   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
+  //   const [players, setPlayers] = useState([]);
   const [cards, setCards] = useState([
     { seme: "D", valore: 1 },
     { seme: "S", valore: 2 },
@@ -86,6 +95,7 @@ const Table = ({ socket, history }) => {
           break;
         }
       }
+      console.log(players);
       setClicked(0);
     });
 
@@ -124,7 +134,7 @@ const Table = ({ socket, history }) => {
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
-            disabled={!somme || !selectedCards.includes(card)}
+            disabled={!somme || selectedCards.includes(card)}
             // style={{
             //   border: selectedCards.includes(card) ? "5px solid red" : null,
             // }}
@@ -134,7 +144,7 @@ const Table = ({ socket, history }) => {
       <hr />
       <h4>Mano</h4>
       <Container fluid>
-        <Trail
+        {/* <Trail
           items={cards}
           keys={(card) => card.valore.toString() + card.seme}
           from={{
@@ -153,19 +163,18 @@ const Table = ({ socket, history }) => {
               disabled={!player.isPlaying || clicked}
             />
           )}
-        </Trail>
-        {/*}
+        </Trail> */}
+
         {cards.map((card, i) => (
-          <AnimatedPlayingCard
-            key={valore}
-            style={props}
+          <PlayingCard
+            key={i}
+            // style={props}
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleCardClick(card)}
             disabled={!player.isPlaying || clicked}
           />
         ))}
-        */}
       </Container>
     </Container>
   );

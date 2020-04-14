@@ -1,10 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { GameContext } from "./GameContext";
+import { withRouter } from "react-router-dom";
 import PlayingCard from "./PlayingCard";
 
 const EndRound = ({ socket, history }) => {
-  const { table, setTable, username, setUsername } = useContext(GameContext);
+  const {
+    table,
+    setTable,
+    username,
+    setUsername,
+    player,
+    setPlayer,
+    players,
+    setPlayers,
+    playerOne,
+    setPlayerOne,
+  } = useContext(GameContext);
   const [scores, setScores] = useState([
     {
       punti: 0,
@@ -30,6 +42,10 @@ const EndRound = ({ socket, history }) => {
     },
   ]);
 
+  const nextRound = () => {
+    socket.emit("nextRound");
+  };
+
   useEffect(() => {
     socket.on("prese", ({ data }) => {
       setScores([
@@ -38,12 +54,26 @@ const EndRound = ({ socket, history }) => {
       ]);
     });
 
-    socket.on("punti", () => {
+    socket.on("punti", ({ puntiPrimoTeam, puntiSecondoTeam }) => {
       console.log("punti");
+      setScores((prevScores) => [
+        {
+          ...prevScores[0],
+          punti: puntiPrimoTeam,
+        },
+        {
+          ...prevScores[1],
+          punti: puntiSecondoTeam,
+        },
+      ]);
     });
 
     socket.on("winners", () => {
       console.log("winners");
+    });
+
+    socket.on("gameIsStarting", () => {
+      history.push("/table");
     });
   }, [socket, history]);
 
@@ -51,6 +81,19 @@ const EndRound = ({ socket, history }) => {
     <Container>
       <br />
       <h1>Fine Round</h1>
+      {players.map((player, i) => (
+        <span key={i}>{player.username} </span>
+      ))}
+      <br />
+      {playerOne === player.username ? (
+        <>
+          <br />
+          <Button onClick={nextRound} variant="success">
+            Prossima Mano
+          </Button>
+          <br />
+        </>
+      ) : null}
       <br />
       <Row>
         {[0, 1].map((team) => (
@@ -78,4 +121,4 @@ const EndRound = ({ socket, history }) => {
   );
 };
 
-export default EndRound;
+export default withRouter(EndRound);

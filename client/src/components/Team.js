@@ -4,9 +4,18 @@ import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 
 const Team = ({ socket, history }) => {
-  const { table, setTable, username, setUsername } = useContext(GameContext);
-  const [players, setPlayers] = useState([]);
-  const [playerOne, setPlayerOne] = useState("");
+  const {
+    table,
+    setTable,
+    username,
+    setUsername,
+    players,
+    setPlayers,
+    playerOne,
+    setPlayerOne,
+  } = useContext(GameContext);
+  //   const [players, setPlayers] = useState([]);
+  //   const [playerOne, setPlayerOne] = useState("");
   const [teamSize, setTeamSize] = useState(0);
 
   const cambiaTeam = () => {

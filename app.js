@@ -98,6 +98,7 @@ io.on("connection", (socket) => {
   //default disconnect when a player leaves the page
   socket.on("disconnect", () => {
     const player = playerLeave(socket.id);
+    console.log("player disconnected", socket.id);
     if (player) {
       // send users and room info
       io.to(player.table).emit("tablePlayers", {
@@ -140,7 +141,8 @@ io.on("connection", (socket) => {
     somma(data, id, last);
   });
 
-  socket.on("nextRound", ({}) => {
+  socket.on("nextRound", () => {
+    io.to(players[0].table).emit("gameIsStarting");
     nextRound();
   });
 });
@@ -158,11 +160,10 @@ var giocaMano = function (players) {
     mani[j / 10] = ordinaMano(mani[j / 10]);
     console.log(j / 10);
     // console.log("mano: \n", mano);
-    console.log(mani);
+    // console.log(mani);
     //players[j / 10].mano = mani[j / 10];
     io.to(players[j / 10].id).emit("playerCards", { cards: mani[j / 10] });
   }
-  console.log(mani);
   io.to(players[0].table).emit("tablePlayers", {
     table: players[0].table,
     players: getTablePlayer(players[0].table),
@@ -542,7 +543,7 @@ var endRound = function (prese1, prese2, id) {
   }
 
   //invio le prese fatta dalle diverse squadre con le rispettive scope
-  io.to(player.id).emit("prese", { data: data });
+  io.to(player.table).emit("prese", { data: data });
 
   //CONTEGGIO DEI PUNTI
 
@@ -760,7 +761,7 @@ var endRound = function (prese1, prese2, id) {
           totale2[0] + totale2[1] + totale2[2] + totale2[3]
         ) {
           punti1++;
-          console.lof("la squadra 1 ha fatto la primiera");
+          console.log("la squadra 1 ha fatto la primiera");
         } else {
           if (
             totale[0] + totale[1] + totale[2] + totale[3] <
@@ -874,7 +875,7 @@ var endRound = function (prese1, prese2, id) {
     puntiSecondoTeam += punti1;
   }
 
-  io.to(player.id).emit("punti", {
+  io.to(player.table).emit("punti", {
     puntiPrimoTeam: puntiPrimoTeam,
     puntiSecondoTeam: puntiSecondoTeam,
   });
@@ -956,7 +957,8 @@ var somma = function (data, id, last) {
 
 var nextRound = function () {
   socketsList = avanzaPosti(socketsList);
-  giocaMano(socketsList, puntiSecondoTeam, puntiPrimoTeam);
+  console.log(socketsList);
+  giocaMano(socketsList);
 };
 
 /*
