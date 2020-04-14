@@ -22,7 +22,6 @@ const {
 var Tavolo = function () {
   var self = {
     socketsList: [],
-    mazzo: makeDeck(),
     mani: [[], [], [], []],
     carte: [],
     prese1: [],
@@ -41,6 +40,7 @@ var Tavolo = function () {
 };
 
 var tavoli = {};
+var mazzo = makeDeck();
 
 /*
 var socketsList = [];
@@ -124,18 +124,29 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     const player = playerLeave(socket.id);
     console.log("player disconnected", socket.id);
+
+    var ps = null;
+
     if (player) {
+      ps = getTablePlayer(player.table);
+
       // send users and room info
       io.to(player.table).emit("tablePlayers", {
         table: player.table,
-        players: getTablePlayer(player.table),
+        players: ps,
       });
+    }
+
+    if (ps == null) {
+      delete tavoli[player.table];
+    } else {
+      tavoli[player.table].players = ps;
     }
   });
 
   //a player can change his team before the game
   socket.on("changeTeam", ({ username }) => {
-    player = getCurrentPlayerByUsername(username);
+    var player = getCurrentPlayerByUsername(username);
     if (player.team == 0) {
       player.team = 1;
     } else {
@@ -150,16 +161,17 @@ io.on("connection", (socket) => {
 
   //starts the game
   socket.on("initGame", ({ username, table }) => {
-    players = getTablePlayer(table);
+    var players = getTablePlayer(table);
     if (players.length == 4) {
       players = initGame(players, io);
+      tavoli[table].players = players;
       io.to(players[0].table).emit("gameIsStarting");
-      giocaMano();
+      giocaMano(table);
     }
   });
 
   socket.on("restartGame", ({ username, table }) => {
-    if (players.length == 4) {
+    if (tavoli[table].players.length == 4) {
       io.to(table).emit("gameRestarting");
     }
   });
@@ -172,54 +184,71 @@ io.on("connection", (socket) => {
     somma(data, id, last);
   });
 
-  socket.on("nextRound", () => {
-    io.to(players[0].table).emit("gameIsStarting");
-    nextRound();
+  socket.on("nextRound", ({ table }) => {
+    io.to(table).emit("gameIsStarting");
+    nextRound(table);
   });
 });
 
-var giocaMano = function () {
+var giocaMano = function (table) {
   //mischio il mazzo
   var numeri = estrazioneCasuale();
 
   // resetto variabili utili
-  contatoreTurno = 1;
-  mani = [[], [], [], []];
-  prese1 = [];
-  prese2 = [];
-  scope1 = [];
-  scope2 = [];
-  campo = [];
-  ultimaPresa = 0;
+  tavoli[table].contatoreTurno = 1;
+  tavoli[table].mani = [[], [], [], []];
+  tavoli[table].prese1 = [];
+  tavoli[table].prese2 = [];
+  tavoli[table].scope1 = [];
+  tavoli[table].scope2 = [];
+  tavoli[table].campo = [];
+  tavoli[table].ultimaPresa = 0;
 
   //ASSEGNO LA MANO AD OGNI PLAYER
   for (var j = 0; j < 40; j += 10) {
     if (j == 0) {
-      players[j].isPlaying = 1;
+      tavoli[table].players[j].isPlaying = 1;
     }
     for (var i = 0; i < 10; i++) {
-      mani[j / 10][i] = mazzo[numeri[i + j] - 1];
+      tavoli[table].mani[j / 10][i] = mazzo[numeri[i + j] - 1];
     }
-    mani[j / 10] = ordinaMano(mani[j / 10]);
+    tavoli[table].mani[j / 10] = ordinaMano(tavoli[table].mani[j / 10]);
     console.log(j / 10);
     // console.log("mano: \n", mano);
     // console.log(mani);
     //players[j / 10].mano = mani[j / 10];
-    io.to(players[j / 10].id).emit("playerCards", { cards: mani[j / 10] });
+    io.to(tavoli[table].players[j / 10].id).emit("playerCards", {
+      cards: tavoli[table].mani[j / 10],
+    });
   }
-  io.to(players[0].table).emit("tablePlayers", {
-    table: players[0].table,
-    players: getTablePlayer(players[0].table),
+  io.to(table).emit("tablePlayers", {
+    table: table,
+    players: getTablePlayer(table),
   });
   //salvo la lista dei socket dei giocatori
   for (var i = 0; i < 4; i++) {
-    socketsList[i] = io.sockets.connected[players[i].id];
+    tavoli[table].socketsList[i] =
+      io.sockets.connected[tavoli[table].players[i].id];
   }
 
   //variabili usate da tutti i socket e reimpostate a 0 ogni vola che un nuova carta è giocata
 };
 
 var onCard = function (scoekt, id, data) {
+  var table = getCurrentPlayerById(id).table;
+
+  var carte = tavoli[table].carte;
+  var index = tavoli[table].index;
+  var players = tavoli[table].players;
+  var mani = tavoli[table].mani;
+  var prese1 = tavoli[table].prese1;
+  var prese2 = tavoli[table].prese2;
+  var scope1 = tavoli[table].scope1;
+  var scope2 = tavoli[table].scope2;
+  var campo = tavoli[table].campo;
+  var ultimaPresa = tavoli[table].ultimaPresa;
+  var contatoreTurno = tavoli[table].contatoreTurno;
+
   var presa = 0;
   var somma = 0;
   var asso = 0;
@@ -490,6 +519,17 @@ var onCard = function (scoekt, id, data) {
           });
         } else {
           if (index == 3) {
+            tavoli[table].carte = carte;
+            tavoli[table].index = index;
+            tavoli[table].players = players;
+            tavoli[table].mani = mani;
+            tavoli[table].prese1 = prese1;
+            tavoli[table].prese2 = prese2;
+            tavoli[table].scope1 = scope1;
+            tavoli[table].scope2 = scope2;
+            tavoli[table].campo = campo;
+            tavoli[table].ultimaPresa = ultimaPresa;
+            tavoli[table].contatoreTurno = contatoreTurno;
             endRound(prese1, prese2, id);
           } else {
             players[(index + 1) % 4].isPlaying = 1;
@@ -512,6 +552,17 @@ var onCard = function (scoekt, id, data) {
         });
       } else {
         if (index == 3) {
+          tavoli[table].carte = carte;
+          tavoli[table].index = index;
+          tavoli[table].players = players;
+          tavoli[table].mani = mani;
+          tavoli[table].prese1 = prese1;
+          tavoli[table].prese2 = prese2;
+          tavoli[table].scope1 = scope1;
+          tavoli[table].scope2 = scope2;
+          tavoli[table].campo = campo;
+          tavoli[table].ultimaPresa = ultimaPresa;
+          tavoli[table].contatoreTurno = contatoreTurno;
           endRound(prese1, prese2, id);
         } else {
           players[(index + 1) % 4].isPlaying = 1;
@@ -535,6 +586,17 @@ var onCard = function (scoekt, id, data) {
       });
     } else {
       if (index == 3) {
+        tavoli[table].carte = carte;
+        tavoli[table].index = index;
+        tavoli[table].players = players;
+        tavoli[table].mani = mani;
+        tavoli[table].prese1 = prese1;
+        tavoli[table].prese2 = prese2;
+        tavoli[table].scope1 = scope1;
+        tavoli[table].scope2 = scope2;
+        tavoli[table].campo = campo;
+        tavoli[table].ultimaPresa = ultimaPresa;
+        tavoli[table].contatoreTurno = contatoreTurno;
         endRound(prese1, prese2, id);
       } else {
         players[(index + 1) % 4].isPlaying = 1;
@@ -545,15 +607,39 @@ var onCard = function (scoekt, id, data) {
       }
     }
   }
+
+  tavoli[table].carte = carte;
+  tavoli[table].index = index;
+  tavoli[table].players = players;
+  tavoli[table].mani = mani;
+  tavoli[table].prese1 = prese1;
+  tavoli[table].prese2 = prese2;
+  tavoli[table].scope1 = scope1;
+  tavoli[table].scope2 = scope2;
+  tavoli[table].campo = campo;
+  tavoli[table].ultimaPresa = ultimaPresa;
+  tavoli[table].contatoreTurno = contatoreTurno;
+
   console.log("sono arrivato in fondo, cambio il giocatore che deve gicoare");
   players[index].isPlaying = 0;
   io.to(players[index].table).emit("tablePlayers", {
     table: players[index].table,
     players: getTablePlayer(players[index].table),
   });
+
+  console.log("prova fondo");
 };
 
 var endRound = function (prese1, prese2, id) {
+  var table = getCurrentPlayerById(id).table;
+  var prese1 = tavoli[table].prese1;
+  var prese2 = tavoli[table].prese2;
+  var scope1 = tavoli[table].scope1;
+  var scope2 = tavoli[table].scope2;
+  var ultimaPresa = tavoli[table].ultimaPresa;
+  var puntiPrimoTeam = tavoli[table].puntiPrimoTeam;
+  var puntiSecondoTeam = tavoli[table].puntiSecondoTeam;
+
   console.log("endRound raggiunto");
   var player = getCurrentPlayerById(id);
   console.log(id);
@@ -948,9 +1034,30 @@ var endRound = function (prese1, prese2, id) {
       team: 1,
     });
   }
+
+  tavoli[table].prese1 = prese1;
+  tavoli[table].prese2 = prese2;
+  tavoli[table].scope1 = scope1;
+  tavoli[table].scope2 = scope2;
+  tavoli[table].ultimaPresa = ultimaPresa;
+  tavoli[table].puntiPrimoTeam = puntiPrimoTeam;
+  tavoli[table].puntiSecondoTeam = puntiSecondoTeam;
 };
 
 var somma = function (data, id, last) {
+  var table = getCurrentPlayerById(id).table;
+
+  var carte = tavoli[table].carte;
+  var index = tavoli[table].index;
+  var players = tavoli[table].players;
+
+  var prese1 = tavoli[table].prese1;
+  var prese2 = tavoli[table].prese2;
+
+  var campo = tavoli[table].campo;
+
+  var contatoreTurno = tavoli[table].contatoreTurno;
+
   for (var j in data) {
     for (var i = 0; i < campo.length; i++) {
       if (campo[i].valore == data[j].valore && campo[i].seme == data[j].seme) {
@@ -987,6 +1094,17 @@ var somma = function (data, id, last) {
   } else {
     //se il contatore dei turni è uguale a 10 vuol dir e che era l'ultima mano, chiamo la fine del gico
     if (index == 3) {
+      tavoli[table].carte = carte;
+      tavoli[table].index = index;
+      tavoli[table].players = players;
+
+      tavoli[table].prese1 = prese1;
+      tavoli[table].prese2 = prese2;
+
+      tavoli[table].campo = campo;
+
+      tavoli[table].contatoreTurno = contatoreTurno;
+
       endRound(prese1, prese2, id);
     } else {
       players[(index + 1) % 4].isPlaying = 1;
@@ -996,13 +1114,24 @@ var somma = function (data, id, last) {
       });
     }
   }
+
+  tavoli[table].carte = carte;
+  tavoli[table].index = index;
+  tavoli[table].players = players;
+
+  tavoli[table].prese1 = prese1;
+  tavoli[table].prese2 = prese2;
+
+  tavoli[table].campo = campo;
+
+  tavoli[table].contatoreTurno = contatoreTurno;
 };
 
-var nextRound = function () {
-  socketsList = avanzaPosti(socketsList);
-  players = avanzaPosti(players);
+var nextRound = function (table) {
+  tavoli[table].socketsList = avanzaPosti(tavoli[table].socketsList);
+  tavoli[table].players = avanzaPosti(tavoli[table].players);
 
-  giocaMano();
+  giocaMano(table);
 };
 
 /*
