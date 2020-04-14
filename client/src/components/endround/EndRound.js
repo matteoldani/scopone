@@ -46,7 +46,7 @@ const EndRound = ({ socket, history }) => {
   const [winner, setWinner] = useState(2);
 
   const nextRound = () => {
-    socket.emit("nextRound");
+    socket.emit("nextRound", { table: player.table });
   };
 
   const gioca = () => {
