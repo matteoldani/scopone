@@ -49,6 +49,10 @@ const EndRound = ({ socket, history }) => {
     socket.emit("nextRound");
   };
 
+  const gioca = () => {
+    socket.emit("restartGame", { username, table });
+  };
+
   useEffect(() => {
     socket.on("prese", ({ data }) => {
       setScores([
@@ -76,8 +80,8 @@ const EndRound = ({ socket, history }) => {
       setWinner(team);
     });
 
-    socket.on("gameIsStarting", () => {
-      history.push("/table");
+    socket.on("gameRestarting", () => {
+      history.push("/team");
     });
   }, [socket, history]);
 
@@ -103,6 +107,7 @@ const EndRound = ({ socket, history }) => {
         <WinnerCard
           winner={winner}
           players={players.filter((player) => player.team === winner - 1)}
+          gioca={gioca}
         />
       )}
       <br />

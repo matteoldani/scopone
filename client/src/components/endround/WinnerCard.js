@@ -1,8 +1,7 @@
 import React from "react";
 import { Card, Button } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
 
-const EndGame = ({ winner, players }) => {
+const EndGame = ({ winner, players, gioca }) => {
   return (
     <>
       <br />
@@ -22,7 +21,7 @@ const EndGame = ({ winner, players }) => {
             {players[0].username} e {players[1].username} sono i giocatori
             migliori di sempre.
           </Card.Text>
-          <Button>Gioca Ancora</Button>
+          <Button onClick={gioca}>Gioca Ancora</Button>
         </Card.Body>
       </Card>
     </>
