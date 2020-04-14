@@ -639,6 +639,7 @@ var endRound = function (prese1, prese2, id) {
   var ultimaPresa = tavoli[table].ultimaPresa;
   var puntiPrimoTeam = tavoli[table].puntiPrimoTeam;
   var puntiSecondoTeam = tavoli[table].puntiSecondoTeam;
+  var campo = tavoli[table].campo;
 
   console.log("endRound raggiunto");
   var player = getCurrentPlayerById(id);
@@ -1042,6 +1043,7 @@ var endRound = function (prese1, prese2, id) {
   tavoli[table].ultimaPresa = ultimaPresa;
   tavoli[table].puntiPrimoTeam = puntiPrimoTeam;
   tavoli[table].puntiSecondoTeam = puntiSecondoTeam;
+  tavoli[table].campo = campo;
 };
 
 var somma = function (data, id, last) {
