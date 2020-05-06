@@ -174,9 +174,6 @@ io.on("connection", (socket) => {
     if (tavoli[table].players.length == 4) {
       io.to(table).emit("gameRestarting");
     }
-    tavoli[table].puntiPrimoTeam = 0;
-    tavoli[table].puntiSecondoTeam = 0;
-    tavoli[table].index = 0;
   });
 
   socket.on("card", ({ id, data }) => {
