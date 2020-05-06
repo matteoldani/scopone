@@ -135,12 +135,12 @@ io.on("connection", (socket) => {
         table: player.table,
         players: ps,
       });
-    }
 
-    if (ps == null) {
-      delete tavoli[player.table];
-    } else {
-      tavoli[player.table].players = ps;
+      if (ps == null) {
+        delete tavoli[player.table];
+      } else {
+        tavoli[player.table].players = ps;
+      }
     }
   });
 
@@ -174,6 +174,10 @@ io.on("connection", (socket) => {
     if (tavoli[table].players.length == 4) {
       io.to(table).emit("gameRestarting");
     }
+
+    tavoli[table].puntiPrimoTeam = 0;
+    tavoli[table].puntiSecondoTeam = 0;
+    tavoli[table].index = 0;
   });
 
   socket.on("card", ({ id, data }) => {
@@ -1013,25 +1017,25 @@ var endRound = function (prese1, prese2, id) {
   if (puntiPrimoTeam >= 21) {
     if (puntiSecondoTeam < 21) {
       //vince la parita la squadra 1;
-      io.to(sockets[0].table).emit("winners", {
+      io.to(table).emit("winners", {
         team: 0,
       });
     } else {
       if (puntiPrimoTeam > puntiSecondoTeam) {
         //vince la partita la squadra 1;
-        io.to(sockets[0].table).emit("winners", {
+        io.to(table).emit("winners", {
           team: 0,
         });
       } else {
         //vince squadra 2;
-        io.to(sockets[0].table).emit("winners", {
+        io.to(table).emit("winners", {
           team: 1,
         });
       }
     }
   } else if (puntiSecondoTeam >= 21) {
     //vince squadra 2;
-    io.to(sockets[0].table).emit("winners", {
+    io.to(table).emit("winners", {
       team: 1,
     });
   }
