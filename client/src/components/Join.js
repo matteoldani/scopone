@@ -55,7 +55,7 @@ const Join = () => {
         </Form.Group>
         <LinkContainer
           onClick={(e) => (!username || !table ? e.preventDefault() : null)}
-          to={"/game/team"}
+          to={"/team"}
         >
           <Button variant="success" type="submit">
             Gioca

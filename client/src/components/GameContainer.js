@@ -5,24 +5,17 @@ import EndRound from "./endround/EndRound";
 import Table from "./Table";
 import Team from "./Team";
 
+let socket;
+const SERVER = "localhost:8081";
+socket = io(SERVER);
+
 const GameContainer = () => {
-  let socket;
-  const SERVER = "localhost:8081";
-  socket = io(SERVER);
   return (
     <Switch>
+      <Route path="/team" exact component={() => <Team socket={socket} />} />
+      <Route path="/table" exact component={() => <Table socket={socket} />} />
       <Route
-        path="/game/team"
-        exact
-        component={() => <Team socket={socket} />}
-      />
-      <Route
-        path="/game/table"
-        exact
-        component={() => <Table socket={socket} />}
-      />
-      <Route
-        path="/game/round"
+        path="/round"
         exact
         component={() => <EndRound socket={socket} />}
       />
