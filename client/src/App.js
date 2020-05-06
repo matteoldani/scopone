@@ -12,8 +12,8 @@ const App = () => {
   return (
     <Router>
       <GameProvider>
-        <Route path="/" exact component={Join} />
-        <GameContainer />
+        <Route path="/" exact component={() => <Join />} />
+        <Route path="/game" component={() => <GameContainer />} />
       </GameProvider>
     </Router>
   );

@@ -19,7 +19,7 @@ const Team = ({ socket, history }) => {
   const [teamSize, setTeamSize] = useState(0);
 
   const cambiaTeam = () => {
-    socket.emit("changeTeam", { username });
+    socket.emit("changeTeam", { username, table });
   };
 
   const gioca = () => {
@@ -47,7 +47,7 @@ const Team = ({ socket, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push("/table");
+      history.push("/game/table");
     });
 
     console.log(socket);

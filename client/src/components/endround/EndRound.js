@@ -81,7 +81,7 @@ const EndRound = ({ socket, history }) => {
     });
 
     socket.on("gameRestarting", () => {
-      history.push("/team");
+      history.push("/game/team");
     });
   }, [socket, history]);
 
