@@ -47,7 +47,7 @@ const Team = ({ socket, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push("/table");
+      history.push("/game/table");
     });
 
     console.log(socket);
