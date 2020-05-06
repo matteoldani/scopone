@@ -100,7 +100,7 @@ const Table = ({ socket, history }) => {
     });
 
     socket.on("endRound", () => {
-      history.push("/round");
+      history.push("/table/round");
     });
   }, [socket, history, players, username]);
 
