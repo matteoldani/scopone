@@ -1,22 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
-import { GameContext } from "../GameContext";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
+import { GameContext } from "../GameContext";
 import PlayingCard from "../PlayingCard";
 import WinnerCard from "./WinnerCard";
 
 const EndRound = ({ socket, history }) => {
   const {
     table,
-    setTable,
     username,
-    setUsername,
     player,
-    setPlayer,
     players,
-    setPlayers,
     playerOne,
-    setPlayerOne,
+    setResetting,
   } = useContext(GameContext);
   const [scores, setScores] = useState([
     {
@@ -77,10 +73,11 @@ const EndRound = ({ socket, history }) => {
 
     socket.on("winners", ({ team }) => {
       console.log("winners");
-      setWinner(team);
+      setWinner(team + 1);
     });
 
     socket.on("gameRestarting", () => {
+      setResetting(1);
       history.push("/team");
     });
   }, [socket, history]);

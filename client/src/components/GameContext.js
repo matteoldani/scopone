@@ -13,6 +13,7 @@ export const GameProvider = (props) => {
     { username: "Ferruccio Resta", team: 1 },
   ]);
   const [playerOne, setPlayerOne] = useState("alberto");
+  const [resetting, setResetting] = useState(0);
 
   return (
     <GameContext.Provider
@@ -27,6 +28,8 @@ export const GameProvider = (props) => {
         setPlayers,
         playerOne,
         setPlayerOne,
+        resetting,
+        setResetting,
       }}
     >
       {props.children}

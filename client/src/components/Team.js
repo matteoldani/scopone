@@ -6,16 +6,14 @@ import { GameContext } from "./GameContext";
 const Team = ({ socket, history }) => {
   const {
     table,
-    setTable,
     username,
-    setUsername,
     players,
     setPlayers,
     playerOne,
     setPlayerOne,
+    resetting,
+    setResetting,
   } = useContext(GameContext);
-  //   const [players, setPlayers] = useState([]);
-  //   const [playerOne, setPlayerOne] = useState("");
   const [teamSize, setTeamSize] = useState(0);
 
   const cambiaTeam = () => {
@@ -27,15 +25,18 @@ const Team = ({ socket, history }) => {
   };
 
   useEffect(() => {
-    // join table
-    socket.emit("joinTable", { username, table });
+    if (!resetting) {
+      // join table
+      socket.emit("joinTable", { username, table });
 
-    socket.on("connectionError", ({ error }) => {
-      alert(error);
-      //   socket.emit("forceDisconnect");
-      history.push("/");
-    });
-
+      socket.on("connectionError", ({ error }) => {
+        alert(error);
+        history.push("/");
+      });
+      setResetting(0);
+    } else {
+      setPlayers(players);
+    }
     // get players for current table
     socket.on("tablePlayers", ({ table, players }) => {
       setPlayers(players);
