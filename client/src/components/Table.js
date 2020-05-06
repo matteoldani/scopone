@@ -135,9 +135,6 @@ const Table = ({ socket, history }) => {
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
             disabled={!somme || selectedCards.includes(card)}
-            // style={{
-            //   border: selectedCards.includes(card) ? "5px solid red" : null,
-            // }}
           />
         ))}
       </Container>
