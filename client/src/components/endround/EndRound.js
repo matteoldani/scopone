@@ -77,7 +77,7 @@ const EndRound = ({ socket, history }) => {
 
     socket.on("winners", ({ team }) => {
       console.log("winners");
-      setWinner(team);
+      setWinner(team + 1);
     });
 
     socket.on("gameRestarting", () => {

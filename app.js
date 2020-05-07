@@ -42,34 +42,6 @@ var Tavolo = function () {
 var tavoli = {};
 var mazzo = makeDeck();
 
-/*
-var socketsList = [];
-var mazzo = makeDeck();
-
-//lista con tutti le mani
-var mani = [[], [], [], []];
-
-var carte = [];
-
-var prese1 = [];
-var prese2 = [];
-
-var scope1 = [];
-var scope2 = [];
-
-var campo = [];
-
-//se 1 è la prma squadra se 2 la seconda...per decidere a chi dare le carte in campo
-var ultimaPresa = 0;
-
-var contatoreTurno = 1;
-var players = [];
-
-var puntiPrimoTeam = 0;
-var puntiSecondoTeam = 0;
-
-var index;
-*/
 //in questo modo non vengono processate query che richiedono le risorse a /server
 //se la query è nulla viene richiamara la funzione
 app.get("/", function (req, res) {
@@ -338,7 +310,7 @@ var onCard = function (scoekt, id, data) {
 
         //svuoto l'array carte cos' da poterlo riuatilizzare
         carte.splice(0, carte.length);
-        if (campo.length == 1) {
+        if (campo.length == 0) {
           if (index == 0 || index == 2) {
             scope1.push(data);
           } else {
@@ -456,6 +428,12 @@ var onCard = function (scoekt, id, data) {
           ultimaPresa = 2;
         }
         if (tipoSommaTripla == 1) {
+          if (index == 0 || index == 2) {
+            prese1.push(data);
+          } else {
+            prese2.push(data);
+          }
+
           for (var i = 0; i < campo.length; i++) {
             if (
               campo[i].valore == 2 ||
@@ -464,17 +442,22 @@ var onCard = function (scoekt, id, data) {
             ) {
               if (index == 0 || index == 2) {
                 prese1.push(campo[i]);
-                prese1.push(data);
               } else {
                 prese2.push(campo[i]);
-                prese2.push(data);
               }
 
               carte.push(campo[i]);
               campo.splice(i, 1);
+              i--;
             }
           }
         } else {
+          if (index == 0 || index == 2) {
+            prese1.push(data);
+          } else {
+            prese2.push(data);
+          }
+
           for (var i = 0; i < campo.length; i++) {
             if (
               campo[i].valore == 2 ||
@@ -483,14 +466,13 @@ var onCard = function (scoekt, id, data) {
             ) {
               if (index == 0 || index == 2) {
                 prese1.push(campo[i]);
-                prese1.push(data);
               } else {
                 prese2.push(campo[i]);
-                prese2.push(data);
               }
 
               carte.push(campo[i]);
               campo.splice(i, 1);
+              i--;
             }
           }
         }
@@ -1017,17 +999,22 @@ var endRound = function (prese1, prese2, id) {
   if (puntiPrimoTeam >= 21) {
     if (puntiSecondoTeam < 21) {
       //vince la parita la squadra 1;
+      console.log("ha vinto il primo team");
       io.to(table).emit("winners", {
         team: 0,
       });
     } else {
       if (puntiPrimoTeam > puntiSecondoTeam) {
         //vince la partita la squadra 1;
+        console.log("ha vinto il primo team");
+
         io.to(table).emit("winners", {
           team: 0,
         });
       } else {
         //vince squadra 2;
+        console.log("ha vinto il primo team");
+
         io.to(table).emit("winners", {
           team: 1,
         });
@@ -1035,6 +1022,8 @@ var endRound = function (prese1, prese2, id) {
     }
   } else if (puntiSecondoTeam >= 21) {
     //vince squadra 2;
+    console.log("ha vinto il primo team");
+
     io.to(table).emit("winners", {
       team: 1,
     });
