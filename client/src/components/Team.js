@@ -39,7 +39,7 @@ const Team = ({ history }) => {
       });
       setResetting(0);
     } else {
-      setPlayers(players);
+      setPlayers([...players]);
     }
     // get players for current table
     socket.on("tablePlayers", ({ table, players }) => {
