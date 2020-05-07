@@ -3,13 +3,29 @@ import { Button } from "react-bootstrap";
 import { GiClubs, GiDiamonds, GiHearts, GiSpades } from "react-icons/gi";
 
 const PlayingCard = ({ seme, valore, onClick, disabled, size, style }) => {
+  switch (valore) {
+    case 8:
+      valore = "J";
+      break;
+    case 9:
+      valore = "Q";
+    case 10:
+      valore = "K";
+
+    default:
+      break;
+  }
+
   return size === "small" ? (
     <span>
-      {valore}
-      {seme === "S" ? <span>&spades; </span> : null}
-      {seme === "H" ? <span>&hearts; </span> : null}
-      {seme === "D" ? <span>&diams; </span> : null}
-      {seme === "C" ? <span>&clubs; </span> : null}{" "}
+      {seme === "S" ? <span>{valore} &spades;</span> : null}
+      {seme === "H" ? (
+        <span style={{ color: "red" }}>{valore} &hearts;</span>
+      ) : null}
+      {seme === "D" ? (
+        <span style={{ color: "red" }}>{valore} &diams;</span>
+      ) : null}
+      {seme === "C" ? <span>{valore} &clubs;</span> : null}{" "}
     </span>
   ) : (
     <Button

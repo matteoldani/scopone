@@ -24,7 +24,7 @@ const EndRound = ({ history }) => {
       ],
       scope: [
         { valore: 3, seme: "C" },
-        { valore: 3, seme: "D" },
+        { valore: 10, seme: "D" },
       ],
     },
     {
@@ -40,7 +40,7 @@ const EndRound = ({ history }) => {
     },
   ]);
 
-  const [winner, setWinner] = useState(2);
+  const [winner, setWinner] = useState(3);
 
   const nextRound = () => {
     socket.emit("nextRound", { table: player.table });
@@ -92,7 +92,7 @@ const EndRound = ({ history }) => {
         <span key={i}>{player.username} </span>
       ))}
       <br />
-      {winner === 2 ? (
+      {winner === 3 ? (
         playerOne === player.username ? (
           <>
             <br />
