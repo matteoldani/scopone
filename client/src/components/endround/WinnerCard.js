@@ -25,7 +25,9 @@ const EndGame = ({ winner, players, gioca }) => {
             migliori di sempre!
           </Card.Text>
           {username === playerOne ? (
-            <Button onClick={gioca}>Gioca Ancora</Button>
+            <Button variant="light" onClick={gioca}>
+              Gioca Ancora
+            </Button>
           ) : null}
         </Card.Body>
       </Card>

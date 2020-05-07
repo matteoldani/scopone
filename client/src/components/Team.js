@@ -3,8 +3,9 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 
-const Team = ({ socket, history }) => {
+const Team = ({ history }) => {
   const {
+    socket,
     table,
     username,
     players,
@@ -25,8 +26,11 @@ const Team = ({ socket, history }) => {
   };
 
   useEffect(() => {
+    if (!socket) return;
+
     if (!resetting) {
       // join table
+      console.log("rerender");
       socket.emit("joinTable", { username, table });
 
       socket.on("connectionError", ({ error }) => {
@@ -48,7 +52,7 @@ const Team = ({ socket, history }) => {
     });
 
     socket.on("gameIsStarting", () => {
-      history.push("/table");
+      history.push("/game/table");
     });
 
     console.log(socket);

@@ -5,8 +5,9 @@ import { GameContext } from "../GameContext";
 import PlayingCard from "../PlayingCard";
 import WinnerCard from "./WinnerCard";
 
-const EndRound = ({ socket, history }) => {
+const EndRound = ({ history }) => {
   const {
+    socket,
     table,
     username,
     player,
@@ -50,6 +51,7 @@ const EndRound = ({ socket, history }) => {
   };
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("prese", ({ data }) => {
       setScores([
         { prese: data.prese1, scope: data.scope1 },
@@ -78,9 +80,9 @@ const EndRound = ({ socket, history }) => {
 
     socket.on("gameRestarting", () => {
       setResetting(1);
-      history.push("/team");
+      history.push("/game/team");
     });
-  }, [socket, history]);
+  }, [socket, history, setResetting]);
 
   return (
     <Container>

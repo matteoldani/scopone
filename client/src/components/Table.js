@@ -4,8 +4,9 @@ import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
 
-const Table = ({ socket, history }) => {
+const Table = ({ history }) => {
   const {
+    socket,
     username,
     table,
     player,
@@ -63,6 +64,7 @@ const Table = ({ socket, history }) => {
   };
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("playerCards", ({ cards }) => {
       setCards(cards);
     });
@@ -78,6 +80,7 @@ const Table = ({ socket, history }) => {
   }, [socket, cards, campo, lastPlayed]);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("tablePlayers", ({ table, players }) => {
       setPlayers(players);
       for (let i = 0; i < players.length; ++i) {
@@ -91,9 +94,9 @@ const Table = ({ socket, history }) => {
     });
 
     socket.on("endRound", () => {
-      history.push("/round");
+      history.push("/game/round");
     });
-  }, [socket, history, players, username]);
+  }, [socket, history, setPlayer, players, setPlayers, username]);
 
   return (
     <Container fluid style={{ backgroundColor: "#28a745", minHeight: "100vh" }}>

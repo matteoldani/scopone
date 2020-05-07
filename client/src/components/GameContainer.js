@@ -4,21 +4,23 @@ import io from "socket.io-client";
 import EndRound from "./endround/EndRound";
 import Table from "./Table";
 import Team from "./Team";
-
-let socket;
-const SERVER = "localhost:8081";
-socket = io(SERVER);
+import { useEffect } from "react";
+import { useContext } from "react";
+import { GameContext } from "./GameContext";
 
 const GameContainer = () => {
+  const { setSocket } = useContext(GameContext);
+  const SERVER = "http://localhost:8081/";
+
+  useEffect(() => {
+    setSocket(io(SERVER));
+  }, [setSocket]);
+
   return (
     <Switch>
-      <Route path="/team" exact component={() => <Team socket={socket} />} />
-      <Route path="/table" exact component={() => <Table socket={socket} />} />
-      <Route
-        path="/round"
-        exact
-        component={() => <EndRound socket={socket} />}
-      />
+      <Route path="/game/team" exact component={Team} />
+      <Route path="/game/table" exact component={Table} />
+      <Route path="/game/round" exact component={EndRound} />
     </Switch>
   );
 };
