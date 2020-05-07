@@ -21,3 +21,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+temp.js
+app-conNumneroAlTavolo.js
+/client-old
+appunti.txt
+
