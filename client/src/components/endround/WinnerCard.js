@@ -1,7 +1,10 @@
 import React from "react";
 import { Card, Button } from "react-bootstrap";
+import { useContext } from "react";
+import { GameContext } from "../GameContext";
 
 const EndGame = ({ winner, players, gioca }) => {
+  const { playerOne, username } = useContext(GameContext);
   return (
     <>
       <br />
@@ -19,9 +22,13 @@ const EndGame = ({ winner, players, gioca }) => {
           <Card.Title>Team {winner} is the winner! </Card.Title>
           <Card.Text>
             {players[0].username} e {players[1].username} sono i giocatori
-            migliori di sempre.
+            migliori di sempre!
           </Card.Text>
-          <Button onClick={gioca}>Gioca Ancora</Button>
+          {username === playerOne ? (
+            <Button variant="light" onClick={gioca}>
+              Gioca Ancora
+            </Button>
+          ) : null}
         </Card.Body>
       </Card>
     </>

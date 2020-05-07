@@ -1,8 +1,6 @@
 import React, { useContext } from "react";
-import { Form, Button, Container } from "react-bootstrap";
-
+import { Button, Container, Form } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-
 import { GameContext } from "./GameContext";
 
 const Join = () => {
@@ -55,7 +53,7 @@ const Join = () => {
         </Form.Group>
         <LinkContainer
           onClick={(e) => (!username || !table ? e.preventDefault() : null)}
-          to={"/team"}
+          to={"/game/team"}
         >
           <Button variant="success" type="submit">
             Gioca

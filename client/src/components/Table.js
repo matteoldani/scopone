@@ -3,25 +3,17 @@ import { Container } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import { GameContext } from "./GameContext";
 import PlayingCard from "./PlayingCard";
-// import { useSpring, useTrail, animated } from "react-spring";
-import { Trail } from "react-spring/renderprops";
 
-const Table = ({ socket, history }) => {
-  //   const props = useSpring({ opacity: 1, from: { opacity: 0 } });
-  //   const AnimatedPlayingCard = animated(PlayingCard);
-
+const Table = ({ history }) => {
   const {
+    socket,
     username,
-    setUsername,
     table,
-    setTable,
     player,
     setPlayer,
     players,
     setPlayers,
   } = useContext(GameContext);
-  //   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
-  //   const [players, setPlayers] = useState([]);
   const [cards, setCards] = useState([
     { seme: "D", valore: 1 },
     { seme: "S", valore: 2 },
@@ -72,6 +64,7 @@ const Table = ({ socket, history }) => {
   };
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("playerCards", ({ cards }) => {
       setCards(cards);
     });
@@ -87,6 +80,7 @@ const Table = ({ socket, history }) => {
   }, [socket, cards, campo, lastPlayed]);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("tablePlayers", ({ table, players }) => {
       setPlayers(players);
       for (let i = 0; i < players.length; ++i) {
@@ -100,9 +94,9 @@ const Table = ({ socket, history }) => {
     });
 
     socket.on("endRound", () => {
-      history.push("/round");
+      history.push("/game/round");
     });
-  }, [socket, history, players, username]);
+  }, [socket, history, setPlayer, players, setPlayers, username]);
 
   return (
     <Container fluid style={{ backgroundColor: "#28a745", minHeight: "100vh" }}>
@@ -135,40 +129,15 @@ const Table = ({ socket, history }) => {
             valore={card.valore}
             onClick={() => handleSelectCard(card)}
             disabled={!somme || selectedCards.includes(card)}
-            // style={{
-            //   border: selectedCards.includes(card) ? "5px solid red" : null,
-            // }}
           />
         ))}
       </Container>
       <hr />
       <h4>Mano</h4>
       <Container fluid>
-        {/* <Trail
-          items={cards}
-          keys={(card) => card.valore.toString() + card.seme}
-          from={{
-            transform: "rotateY(-180deg) translate3d(-5000px,-2000px,0) ",
-          }}
-          to={{
-            transform: "rotateY(0) translate3d(0,0px,0) ",
-          }}
-        >
-          {(card) => (props) => (
-            <PlayingCard
-              style={props}
-              seme={card.seme}
-              valore={card.valore}
-              onClick={() => handleCardClick(card)}
-              disabled={!player.isPlaying || clicked}
-            />
-          )}
-        </Trail> */}
-
         {cards.map((card, i) => (
           <PlayingCard
             key={i}
-            // style={props}
             seme={card.seme}
             valore={card.valore}
             onClick={() => handleCardClick(card)}

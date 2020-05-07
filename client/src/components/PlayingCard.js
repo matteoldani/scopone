@@ -1,8 +1,6 @@
 import React from "react";
-
 import { Button } from "react-bootstrap";
-
-import { GiSpades, GiDiamonds, GiHearts, GiClubs } from "react-icons/gi";
+import { GiClubs, GiDiamonds, GiHearts, GiSpades } from "react-icons/gi";
 
 const PlayingCard = ({ seme, valore, onClick, disabled, size, style }) => {
   return size === "small" ? (

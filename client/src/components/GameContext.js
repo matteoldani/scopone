@@ -2,7 +2,8 @@ import React, { useState } from "react";
 
 export const GameContext = React.createContext();
 
-export const GameProvider = (props) => {
+export const GameProvider = ({ children }) => {
+  const [socket, setSocket] = useState();
   const [table, setTable] = useState("");
   const [username, setUsername] = useState("");
   const [player, setPlayer] = useState({ isPlaying: 0, mano: [] });
@@ -13,10 +14,13 @@ export const GameProvider = (props) => {
     { username: "Ferruccio Resta", team: 1 },
   ]);
   const [playerOne, setPlayerOne] = useState("alberto");
+  const [resetting, setResetting] = useState(0);
 
   return (
     <GameContext.Provider
       value={{
+        socket,
+        setSocket,
         table,
         setTable,
         username,
@@ -27,9 +31,11 @@ export const GameProvider = (props) => {
         setPlayers,
         playerOne,
         setPlayerOne,
+        resetting,
+        setResetting,
       }}
     >
-      {props.children}
+      {children}
     </GameContext.Provider>
   );
 };
